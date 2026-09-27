@@ -1,0 +1,343 @@
+/* =====================================================================
+   Theme 7 — "Gradient Neo" (kad Twitter: hitam / gradient ungu / putih)
+   Aktivasi: body.theme7 (dropdown Theme di header)
+   Design language: frame hitam tebal 4px + hard shadow 8px, jalur
+   gradient 90deg #5f72ff -> #9a4eff, kandungan putih, teks #14171a /
+   #657786, divider #e1e8ed, hover terangkat -2px.
+   ===================================================================== */
+
+body.theme7 {
+  background: #f7f9fb;
+  color: #14171a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --grid-line: #e1e8ed;
+}
+
+/* ---------- Surface & text swaps ---------- */
+
+body.theme7 .bg-zinc-900 { background-color: #ffffff !important; }
+body.theme7 .bg-zinc-800 { background-color: #e1e8ed !important; }
+body.theme7 .hover\:bg-zinc-800:hover { background-color: #f0f4f8 !important; }
+
+body.theme7 .text-white { color: #14171a !important; }
+body.theme7 .text-black { color: #ffffff !important; }
+body.theme7 .text-zinc-100,
+body.theme7 .text-zinc-200,
+body.theme7 .text-zinc-300 { color: #14171a !important; }
+body.theme7 .text-zinc-400 { color: #41525f !important; }
+body.theme7 .text-zinc-500 { color: #657786 !important; }
+body.theme7 .text-zinc-600 { color: #8899a6 !important; }
+
+body.theme7 .border-zinc-800,
+body.theme7 .border-zinc-800\/80,
+body.theme7 .border-zinc-700,
+body.theme7 .hover\:border-zinc-700:hover { border-color: #e1e8ed !important; }
+
+/* aksen: kuning -> gradient/biru ungu */
+body.theme7 .text-yellow-400,
+body.theme7 .text-yellow-300 { color: #5f72ff !important; }
+body.theme7 .hover\:text-yellow-300:hover { color: #9a4eff !important; }
+body.theme7 .focus\:border-yellow-400:focus { border-color: #5f72ff !important; }
+body.theme7 .focus\:ring-yellow-400:focus { --tw-ring-color: rgba(95, 114, 255, 0.35) !important; }
+body.theme7 .accent-yellow-400 { accent-color: #5f72ff !important; }
+
+/* jalur gradient pada elemen aksen (badge, chip, toast success) */
+body.theme7 .bg-yellow-400 {
+  background: linear-gradient(90deg, #5f72ff, #9a4eff) !important;
+  color: #ffffff !important;
+}
+body.theme7 .hover\:bg-yellow-300:hover {
+  background: linear-gradient(90deg, #4a5ef0, #8a3ef0) !important;
+  color: #ffffff !important;
+}
+
+/* tombol merah kekal putih */
+body.theme7 .bg-red-600 { color: #fff !important; }
+
+/* ---------- Header ---------- */
+
+body.theme7 header {
+  background: #ffffff !important;
+  border-bottom: 3px solid #000 !important;
+}
+body.theme7 header button {
+  border: 2px solid #000 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  color: #14171a !important;
+  font-weight: 600;
+  box-shadow: 3px 3px 0 #000 !important;
+  transition: all 0.2s ease !important;
+}
+body.theme7 header button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #000 !important;
+}
+body.theme7 header button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #000 !important;
+}
+body.theme7 #btn-new {
+  background: linear-gradient(90deg, #5f72ff, #9a4eff) !important;
+  color: #fff !important;
+}
+body.theme7 #search-input {
+  border: 2px solid #000 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: 3px 3px 0 #000 !important;
+  font-weight: 500;
+}
+body.theme7 #search-input:focus {
+  border-color: #5f72ff !important;
+  outline: none;
+}
+
+/* ---------- Cards (spesifikasi .twitter-card) ---------- */
+
+body.theme7 .prompt-card {
+  background: #ffffff !important;
+  border: 4px solid #000 !important;
+  border-radius: 16px !important;
+  box-shadow: 8px 8px 0 #000 !important;
+  transition: all 0.2s ease !important;
+}
+body.theme7 .prompt-card:hover {
+  border-color: #000 !important;
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 10px 10px 0 #000 !important;
+}
+/* jalur gradient di tepi atas card (echo .card-header) */
+body.theme7 .prompt-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #5f72ff, #9a4eff);
+  z-index: 1;
+  pointer-events: none;
+}
+body.theme7 .prompt-card .img-checker {
+  background-color: #f0f4f8 !important;
+  background-image: conic-gradient(#eef2f6 0 25%, #f7fafc 0 50%, #eef2f6 0 75%, #f7fafc 0) !important;
+  background-size: 16px 16px !important;
+}
+body.theme7 .prompt-card .absolute.top-2.left-2 span {
+  background: #ffffff !important;
+  border: 2px solid #000 !important;
+  color: #14171a !important;
+}
+body.theme7 .prompt-card .absolute.top-2.right-2 {
+  background: #ffffff !important;
+  border: 2px solid #000;
+}
+body.theme7 .prompt-card .bg-yellow-400 {
+  border: 2px solid #000 !important;
+  font-weight: 700;
+}
+body.theme7 .prompt-card .border-t { border-color: #e1e8ed !important; }
+
+/* ---------- Buttons, pills, chips ---------- */
+
+body.theme7 .btn-primary {
+  background: linear-gradient(90deg, #5f72ff, #9a4eff) !important;
+  color: #ffffff !important;
+  border: 2px solid #000 !important;
+  border-radius: 10px !important;
+  font-weight: 600;
+  box-shadow: 4px 4px 0 #000 !important;
+  transition: all 0.2s ease !important;
+}
+body.theme7 .btn-primary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 #000 !important;
+}
+body.theme7 .btn-primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #000 !important;
+}
+
+body.theme7 .btn-secondary {
+  background: #ffffff !important;
+  color: #14171a !important;
+  border: 2px solid #000 !important;
+  border-radius: 10px !important;
+  font-weight: 600;
+  box-shadow: 3px 3px 0 #000 !important;
+  transition: all 0.2s ease !important;
+}
+body.theme7 .btn-secondary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #000 !important;
+}
+body.theme7 .btn-secondary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #000 !important;
+}
+
+body.theme7 .filter-pill {
+  background: #ffffff !important;
+  color: #14171a !important;
+  border: 2px solid #000 !important;
+  font-weight: 500;
+  box-shadow: 3px 3px 0 #000 !important;
+  transition: all 0.2s ease !important;
+}
+body.theme7 .filter-pill:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #000 !important;
+}
+body.theme7 .filter-pill.active {
+  background: linear-gradient(90deg, #5f72ff, #9a4eff) !important;
+  color: #ffffff !important;
+  border-color: #000 !important;
+  font-weight: 600;
+}
+
+body.theme7 .tag-chip {
+  background: #ffffff !important;
+  color: #14171a !important;
+  border: 2px solid #000 !important;
+  font-weight: 600;
+  transition: all 0.2s ease !important;
+}
+body.theme7 .tag-chip:hover { background: #f0f4f8 !important; }
+body.theme7 .tag-chip.active {
+  background: linear-gradient(90deg, #5f72ff, #9a4eff) !important;
+  color: #ffffff !important;
+  border-color: #000 !important;
+}
+
+body.theme7 .icon-btn { color: #657786 !important; }
+body.theme7 .icon-btn:hover {
+  background: #f0f4f8 !important;
+  color: #5f72ff !important;
+}
+
+/* ---------- Form fields ---------- */
+
+body.theme7 .field-label { color: #14171a; font-weight: 600; }
+body.theme7 .field-input {
+  background: #ffffff !important;
+  border: 2px solid #e1e8ed !important;
+  border-radius: 10px !important;
+  color: #14171a !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+body.theme7 .field-input::placeholder { color: #8899a6; }
+body.theme7 .field-input:focus {
+  border-color: #5f72ff !important;
+  box-shadow: 0 0 0 3px rgba(95, 114, 255, 0.2) !important;
+}
+body.theme7 select {
+  border: 2px solid #000 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  color: #14171a !important;
+  font-weight: 500;
+}
+
+/* ---------- Modals ---------- */
+
+body.theme7 .modal-backdrop { background: rgba(20, 23, 26, 0.45) !important; }
+body.theme7 .modal-panel {
+  background: #ffffff !important;
+  border: 4px solid #000 !important;
+  border-radius: 16px !important;
+  box-shadow: 10px 10px 0 #000 !important;
+}
+body.theme7 .modal-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(90deg, #5f72ff, #9a4eff);
+  z-index: 20;
+  pointer-events: none;
+}
+body.theme7 .modal-panel .sticky {
+  border-bottom: 2px solid #e1e8ed !important;
+}
+
+/* blok prompt: hitam ala twitter dark */
+body.theme7 #dm-content pre {
+  background: #14171a !important;
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.15) !important;
+  color: #e1e8ed !important;
+}
+
+/* result cards dalam detail */
+body.theme7 #dm-content div.grid > div {
+  background: #ffffff !important;
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  box-shadow: 5px 5px 0 #000 !important;
+}
+body.theme7 #dm-content div.grid > div .img-checker {
+  background-color: #f0f4f8 !important;
+  background-image: conic-gradient(#eef2f6 0 25%, #f7fafc 0 50%, #eef2f6 0 75%, #f7fafc 0) !important;
+}
+body.theme7 #dm-content .border-t { border-color: #e1e8ed !important; }
+
+/* ---------- Dropzone, toast, misc ---------- */
+
+body.theme7 .dropzone {
+  border: 3px dashed #9aa7b5 !important;
+  border-radius: 12px !important;
+  background: #fbfcfd !important;
+  transition: all 0.2s ease !important;
+}
+body.theme7 .dropzone:hover { border-color: #5f72ff !important; }
+body.theme7 .dropzone.dragover {
+  border-color: #5f72ff !important;
+  background: rgba(95, 114, 255, 0.07) !important;
+}
+
+body.theme7 .toast {
+  border: 2px solid #000 !important;
+  border-radius: 10px !important;
+  box-shadow: 4px 4px 0 #000 !important;
+  font-weight: 600;
+}
+body.theme7 .toast-success {
+  background: linear-gradient(90deg, #5f72ff, #9a4eff) !important;
+  color: #ffffff !important;
+}
+body.theme7 .toast-error { background: #e0245e !important; color: #fff !important; }
+body.theme7 .toast-info { background: #ffffff !important; color: #14171a !important; }
+
+body.theme7 #im-summary {
+  border: 2px solid #e1e8ed !important;
+  border-radius: 10px !important;
+  background: #f7f9fb !important;
+  color: #41525f !important;
+}
+body.theme7 #im-summary [class*="text-yellow"] { color: #5f72ff !important; }
+
+body.theme7 #empty-state .bg-zinc-900 {
+  background: #ffffff !important;
+  border: 2px solid #000 !important;
+  border-radius: 16px !important;
+  box-shadow: 6px 6px 0 #000 !important;
+  color: #5f72ff !important;
+}
+
+body.theme7 #lightbox { background: rgba(20, 23, 26, 0.92) !important; }
+
+/* ---------- Scrollbar & selection ---------- */
+
+body.theme7 ::-webkit-scrollbar-thumb {
+  background: #14171a;
+  border-color: #f7f9fb;
+}
+body.theme7 ::-webkit-scrollbar-thumb:hover { background: #5f72ff; }
+body.theme7 ::selection {
+  background: #5f72ff;
+  color: #ffffff;
+}

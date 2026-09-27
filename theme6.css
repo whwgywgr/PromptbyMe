@@ -1,0 +1,283 @@
+/* =====================================================================
+   Theme 6 — "Warm Caramel" (soft Material: putih / karamel / coklat)
+   Aktivasi: body.theme6 (dropdown Theme di header)
+   Design language: card putih borderless radius 1.5rem, Material
+   shadow dua-layer, teks #4b5563, aksen karamel #ddad81 dengan teks
+   coklat #634647; hover swap terbalik (spec .accept-button).
+   ===================================================================== */
+
+body.theme6 {
+  background: #f4efe8;
+  color: #4b5563;
+  --grid-line: #e9dfd2;
+}
+
+/* ---------- Surface & text swaps ---------- */
+
+body.theme6 .bg-zinc-900 { background-color: #ffffff !important; }
+body.theme6 .bg-zinc-800 { background-color: #e7e0d8 !important; }
+body.theme6 .hover\:bg-zinc-800:hover { background-color: #f6f0e9 !important; }
+
+body.theme6 .text-white { color: #374151 !important; }
+body.theme6 .text-black { color: #634647 !important; }
+body.theme6 .text-zinc-100,
+body.theme6 .text-zinc-200,
+body.theme6 .text-zinc-300 { color: #374151 !important; }
+body.theme6 .text-zinc-400 { color: #4b5563 !important; }
+body.theme6 .text-zinc-500 { color: #6b7280 !important; }
+body.theme6 .text-zinc-600 { color: #9ca3af !important; }
+
+body.theme6 .border-zinc-800,
+body.theme6 .border-zinc-800\/80,
+body.theme6 .border-zinc-700,
+body.theme6 .hover\:border-zinc-700:hover { border-color: #efe9e1 !important; }
+
+/* aksen: kuning -> karamel */
+body.theme6 .bg-yellow-400 { background-color: #ddad81 !important; }
+body.theme6 .hover\:bg-yellow-300:hover {
+  background-color: #634647 !important;
+  color: #ddad81 !important;
+}
+body.theme6 .text-yellow-400,
+body.theme6 .text-yellow-300 { color: #634647 !important; }
+body.theme6 .hover\:text-yellow-300:hover { color: #845556 !important; }
+body.theme6 .focus\:border-yellow-400:focus { border-color: #ddad81 !important; }
+body.theme6 .focus\:ring-yellow-400:focus { --tw-ring-color: rgba(221, 173, 129, 0.4) !important; }
+body.theme6 .accent-yellow-400 { accent-color: #ddad81 !important; }
+
+/* tombol merah kekal putih */
+body.theme6 .bg-red-600 { color: #fff !important; }
+
+/* ---------- Header ---------- */
+
+body.theme6 header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #efe9e1 !important;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 2px 6px 2px;
+}
+body.theme6 header button {
+  border: 1px solid transparent !important;
+  border-radius: 0.5rem !important;
+  background: #ffffff !important;
+  color: #4b5563 !important;
+  font-weight: 600;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 2px 6px 2px;
+  transition: all 0.3s ease !important;
+}
+body.theme6 header button:hover {
+  background: #f6f0e9 !important;
+  color: #634647 !important;
+  border-color: #e7ddd0 !important;
+}
+body.theme6 #search-input {
+  border-radius: 0.75rem !important;
+  border: 1px solid #efe9e1 !important;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 2px 6px 2px;
+  background: #fff !important;
+}
+body.theme6 #search-input:focus {
+  border-color: #ddad81 !important;
+  outline: none;
+}
+
+/* ---------- Cards (spesifikasi .card) ---------- */
+
+body.theme6 .prompt-card {
+  background: #ffffff !important;
+  border-color: transparent !important;
+  border-radius: 1.5rem !important;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 2px 6px 2px !important;
+  transition: box-shadow 0.3s ease, transform 0.3s ease !important;
+}
+body.theme6 .prompt-card:hover {
+  border-color: transparent !important;
+  transform: translateY(-2px);
+  box-shadow: rgba(60, 64, 67, 0.3) 0 2px 4px 0, rgba(60, 64, 67, 0.25) 0 6px 14px 3px !important;
+}
+body.theme6 .prompt-card .img-checker {
+  background-color: #f6f1ea !important;
+  background-image: conic-gradient(#f1eae1 0 25%, #faf6f1 0 50%, #f1eae1 0 75%, #faf6f1 0) !important;
+  background-size: 16px 16px !important;
+}
+body.theme6 .prompt-card .absolute.top-2.left-2 span {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 0 !important;
+  color: #a1795c !important;
+  box-shadow: rgba(60, 64, 67, 0.2) 0 1px 3px 0;
+}
+body.theme6 .prompt-card .absolute.top-2.right-2 {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 0 !important;
+  box-shadow: rgba(60, 64, 67, 0.2) 0 1px 3px 0;
+}
+body.theme6 .prompt-card .border-t { border-color: #f0ebe4 !important; }
+
+/* ---------- Buttons, pills, chips ---------- */
+
+body.theme6 .btn-primary {
+  background: #ddad81 !important;
+  color: #634647 !important;
+  border: 0 !important;
+  border-radius: 0.5rem !important;
+  font-weight: 600;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 2px 6px 2px !important;
+  transition: background-color 0.3s ease, color 0.3s ease !important;
+}
+body.theme6 .btn-primary:hover {
+  background: #634647 !important;
+  color: #ddad81 !important;
+}
+
+body.theme6 .btn-secondary {
+  background: #f6efe7 !important;
+  color: #634647 !important;
+  border: 0 !important;
+  border-radius: 0.5rem !important;
+  font-weight: 600;
+  transition: background-color 0.3s ease !important;
+}
+body.theme6 .btn-secondary:hover { background: #efe3d3 !important; color: #845556 !important; }
+
+body.theme6 .filter-pill {
+  background: #ffffff !important;
+  color: #4b5563 !important;
+  border: 0 !important;
+  font-weight: 500;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 2px 6px 2px !important;
+  transition: all 0.3s ease !important;
+}
+body.theme6 .filter-pill:hover { color: #634647 !important; background: #fdfaf6 !important; }
+body.theme6 .filter-pill.active {
+  background: #ddad81 !important;
+  color: #634647 !important;
+  font-weight: 600;
+}
+
+body.theme6 .tag-chip {
+  background: #f3e8db !important;
+  color: #634647 !important;
+  border: 0 !important;
+  font-weight: 600;
+  transition: background 0.3s ease !important;
+}
+body.theme6 .tag-chip:hover { background: #ecdcc8 !important; }
+body.theme6 .tag-chip.active {
+  background: #ddad81 !important;
+  color: #634647 !important;
+}
+
+body.theme6 .icon-btn { color: #9ca3af !important; }
+body.theme6 .icon-btn:hover {
+  background: #f6f0e9 !important;
+  color: #634647 !important;
+}
+
+/* ---------- Form fields ---------- */
+
+body.theme6 .field-label { color: #374151; font-weight: 600; }
+body.theme6 .field-input {
+  background: #ffffff !important;
+  border: 1px solid #e7e0d8 !important;
+  border-radius: 0.75rem !important;
+  color: #374151 !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+body.theme6 .field-input::placeholder { color: #b0a89c; }
+body.theme6 .field-input:focus {
+  border-color: #ddad81 !important;
+  box-shadow: 0 0 0 3px rgba(221, 173, 129, 0.25) !important;
+}
+body.theme6 select {
+  border: 1px solid #efe9e1 !important;
+  border-radius: 0.75rem !important;
+  background: #ffffff !important;
+  color: #4b5563 !important;
+}
+
+/* ---------- Modals ---------- */
+
+body.theme6 .modal-backdrop { background: rgba(60, 64, 67, 0.35) !important; }
+body.theme6 .modal-panel {
+  background: #ffffff !important;
+  border: 0 !important;
+  border-radius: 1.5rem !important;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 2px 6px 2px, rgba(60, 64, 67, 0.3) 0 8px 28px 4px !important;
+}
+body.theme6 .modal-panel .sticky {
+  border-bottom: 1px solid #f0ebe4 !important;
+}
+
+/* blok prompt: kertas lembut */
+body.theme6 #dm-content pre {
+  background: #f8f4ef !important;
+  border: 0 !important;
+  border-radius: 1rem !important;
+  color: #4b5563 !important;
+}
+
+/* result cards dalam detail */
+body.theme6 #dm-content div.grid > div {
+  background: #ffffff !important;
+  border: 0 !important;
+  border-radius: 1rem !important;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 2px 6px 2px !important;
+}
+body.theme6 #dm-content div.grid > div .img-checker {
+  background-color: #f6f1ea !important;
+  background-image: conic-gradient(#f1eae1 0 25%, #faf6f1 0 50%, #f1eae1 0 75%, #faf6f1 0) !important;
+}
+body.theme6 #dm-content .border-t { border-color: #f0ebe4 !important; }
+
+/* ---------- Dropzone, toast, misc ---------- */
+
+body.theme6 .dropzone {
+  border: 2px dashed #ddd3c6 !important;
+  border-radius: 1rem !important;
+  background: #fbf8f4 !important;
+  transition: all 0.3s ease !important;
+}
+body.theme6 .dropzone:hover { border-color: #c9b69e !important; }
+body.theme6 .dropzone.dragover {
+  border-color: #ddad81 !important;
+  background: rgba(221, 173, 129, 0.1) !important;
+}
+
+body.theme6 .toast {
+  border: 0 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 2px 6px 2px !important;
+  font-weight: 500;
+}
+body.theme6 .toast-success { background: #ddad81 !important; color: #634647 !important; }
+body.theme6 .toast-error { background: #c0563f !important; color: #fff !important; }
+body.theme6 .toast-info { background: #ffffff !important; color: #4b5563 !important; }
+
+body.theme6 #im-summary {
+  border: 0 !important;
+  border-radius: 0.75rem !important;
+  background: #f8f4ef !important;
+  color: #4b5563 !important;
+}
+body.theme6 #im-summary [class*="text-yellow"] { color: #845556 !important; }
+
+body.theme6 #empty-state .bg-zinc-900 {
+  background: #f6efe7 !important;
+  border: 0 !important;
+  border-radius: 1.25rem !important;
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 2px 6px 2px !important;
+  color: #a1795c !important;
+}
+
+body.theme6 #lightbox { background: rgba(50, 45, 40, 0.9) !important; }
+
+/* ---------- Scrollbar & selection ---------- */
+
+body.theme6 ::-webkit-scrollbar-thumb {
+  background: #d6cec2;
+  border-color: #f4efe8;
+}
+body.theme6 ::-webkit-scrollbar-thumb:hover { background: #ddad81; }
+body.theme6 ::selection {
+  background: rgba(221, 173, 129, 0.45);
+  color: #4b5563;
+}

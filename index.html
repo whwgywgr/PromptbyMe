@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompt Manager</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3ClinearGradient%20id='g'%20x1='16'%20y1='40'%20x2='58'%20y2='4'%20gradientUnits='userSpaceOnUse'%3E%3Cstop%20stop-color='%232563eb'/%3E%3Cstop%20offset='1'%20stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath%20fill='%233b82f6'%20d='M20%2036%20L34%2036%20L27%2058%20L8%2064%20Z'/%3E%3Cpath%20fill='url(%23g)'%20d='M20%204%20L44%204%20Q54%204%2054%2013%20L54%2027%20Q54%2036%2044%2036%20L30%2036%20L20%2028%20Z'/%3E%3Cpath%20fill='%2393c5fd'%20d='M20%2028%20L30%2036%20L20%2036%20Z'/%3E%3Cpath%20fill='%23fff'%20d='M36%2012%20L50%2020%20L36%2028%20Z'/%3E%3C/svg%3E" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="theme2.css" />
+  <link rel="stylesheet" href="theme3.css" />
+  <link rel="stylesheet" href="theme4.css" />
+  <link rel="stylesheet" href="theme5.css" />
+  <link rel="stylesheet" href="theme6.css" />
+  <link rel="stylesheet" href="theme7.css" />
+</head>
+<body class="bg-black text-zinc-200 font-sans min-h-screen antialiased">
+
+  <!-- ===== Header ===== -->
+  <header class="sticky top-0 z-40 border-b border-zinc-800/80 bg-black">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center gap-3">
+      <div class="flex items-center gap-2.5 shrink-0">
+        <svg class="w-9 h-9" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="pmBowlH" x1="16" y1="40" x2="58" y2="4" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#2563eb"/>
+              <stop offset="0.55" stop-color="#6d28d9"/>
+              <stop offset="1" stop-color="#a855f7"/>
+            </linearGradient>
+            <linearGradient id="pmStemH" x1="8" y1="64" x2="34" y2="36" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#1e3a8a"/>
+              <stop offset="1" stop-color="#3b82f6"/>
+            </linearGradient>
+          </defs>
+          <path fill="url(#pmStemH)" d="M20 36 L34 36 L27 58 L8 64 Z"/>
+          <path fill="url(#pmBowlH)" d="M20 4 L44 4 Q54 4 54 13 L54 27 Q54 36 44 36 L30 36 L20 28 Z"/>
+          <path fill="#60a5fa" d="M20 28 L30 36 L20 36 Z"/>
+          <path fill="#fff" d="M36 12 L50 20 L36 28 Z"/>
+        </svg>
+        <h1 class="leading-tight">
+          <span class="block text-base font-extrabold tracking-tight text-white">PROMPT</span>
+          <span class="block text-[10px] font-bold tracking-[0.28em] text-zinc-500">MANAGER</span>
+        </h1>
+      </div>
+
+      <div class="flex-1 max-w-xl ml-auto relative">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" id="search-icon"></span>
+        <input id="search-input" type="text" placeholder="Search prompts, tags, models..."
+          class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-sm placeholder-zinc-500 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition" />
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <select id="theme-select" title="Theme"
+          class="bg-zinc-900 border border-zinc-800 rounded-lg text-sm px-2.5 py-2 text-zinc-300 focus:outline-none focus:border-yellow-400 cursor-pointer">
+          <option value="theme1">Theme 1 · Flat Yellow</option>
+          <option value="theme2">Theme 2 · Neo Brutal</option>
+          <option value="theme3">Theme 3 · Soft Light</option>
+          <option value="theme4">Theme 4 · Clean Blue</option>
+          <option value="theme5">Theme 5 · 3D Sandy</option>
+          <option value="theme6">Theme 6 · Warm Caramel</option>
+          <option value="theme7">Theme 7 · Gradient Neo</option>
+        </select>
+        <button id="btn-import" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-700 transition" title="Import backup (.json)">
+          <span id="icon-import"></span> Import
+        </button>
+        <button id="btn-export" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-700 transition" title="Export backup (.json)">
+          <span id="icon-export"></span> Export
+        </button>
+        <button id="btn-new" class="inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black transition">
+          <span id="icon-plus"></span> New Prompt
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Filter bar ===== -->
+  <div class="max-w-7xl mx-auto px-4 pt-5">
+    <div class="flex flex-wrap items-center gap-2">
+      <div id="filter-bar" class="flex flex-wrap items-center gap-1.5">
+        <button data-type="all"       class="filter-pill">All</button>
+        <button data-type="favorites" class="filter-pill">Favorites</button>
+        <button data-type="image"     class="filter-pill">Images</button>
+        <button data-type="video"     class="filter-pill">Videos</button>
+        <button data-type="webview"   class="filter-pill">Webview</button>
+      </div>
+      <div class="hidden md:block w-px h-5 bg-zinc-800 mx-1"></div>
+      <select id="sort-select" class="bg-zinc-900 border border-zinc-800 rounded-lg text-sm px-2.5 py-2 text-zinc-300 focus:outline-none focus:border-yellow-400 cursor-pointer">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="title">Title A → Z</option>
+      </select>
+      <span id="count-label" class="ml-auto text-xs text-zinc-500"></span>
+    </div>
+    <div id="tag-bar" class="flex flex-wrap gap-1.5 mt-3"></div>
+  </div>
+
+  <!-- ===== Grid ===== -->
+  <main class="max-w-7xl mx-auto px-4 py-6 pb-16">
+    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+
+    <div id="empty-state" class="hidden flex-col items-center justify-center text-center py-24 gap-4">
+      <div class="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-yellow-400">
+        <svg class="w-9 h-9" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="pmBowlE" x1="16" y1="40" x2="58" y2="4" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#2563eb"/>
+              <stop offset="0.55" stop-color="#6d28d9"/>
+              <stop offset="1" stop-color="#a855f7"/>
+            </linearGradient>
+            <linearGradient id="pmStemE" x1="8" y1="64" x2="34" y2="36" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#1e3a8a"/>
+              <stop offset="1" stop-color="#3b82f6"/>
+            </linearGradient>
+          </defs>
+          <path fill="url(#pmStemE)" d="M20 36 L34 36 L27 58 L8 64 Z"/>
+          <path fill="url(#pmBowlE)" d="M20 4 L44 4 Q54 4 54 13 L54 27 Q54 36 44 36 L30 36 L20 28 Z"/>
+          <path fill="#60a5fa" d="M20 28 L30 36 L20 36 Z"/>
+          <path fill="#fff" d="M36 12 L50 20 L36 28 Z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 id="empty-title" class="text-lg font-semibold text-zinc-300">No prompts yet</h2>
+        <p id="empty-msg" class="text-sm text-zinc-500 mt-1">Save your first prompt together with its results — images, videos or website previews.</p>
+      </div>
+      <button id="btn-empty-new" class="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black transition">
+        <span id="icon-plus-2"></span> Create your first prompt
+      </button>
+      <button id="btn-clear-filters" class="hidden text-sm text-yellow-400 hover:text-yellow-300 underline underline-offset-4">Clear filters</button>
+    </div>
+  </main>
+
+  <!-- ===== Prompt modal (create / edit) ===== -->
+  <div id="modal-prompt" class="modal hidden fixed inset-0 z-[55]">
+    <div class="modal-backdrop absolute inset-0 bg-black/70 " data-close></div>
+    <div class="modal-panel relative mx-auto mt-[6vh] mb-8 w-[min(680px,calc(100%-2rem))] bg-zinc-900 border border-zinc-800 rounded-2xl max-h-[86vh] overflow-y-auto">
+      <div class="sticky top-0 bg-zinc-900 border-b border-zinc-800 px-6 py-4 flex items-center justify-between z-10">
+        <h2 id="pf-heading" class="text-base font-semibold text-white">New Prompt</h2>
+        <button class="icon-btn" data-close><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <div>
+          <label class="field-label">Title</label>
+          <input id="pf-title" type="text" placeholder="e.g. Cinematic product shot"
+            class="field-input" />
+        </div>
+        <div>
+          <label class="field-label">Model / tool <span class="text-zinc-600 font-normal">(optional)</span></label>
+          <input id="pf-model" type="text" list="model-list" placeholder="e.g. Midjourney, DALL·E, Sora, ChatGPT..."
+            class="field-input" />
+          <datalist id="model-list">
+            <option>Midjourney</option><option>DALL·E 3</option><option>Stable Diffusion</option>
+            <option>Flux</option><option>ChatGPT</option><option>Claude</option><option>Gemini</option>
+            <option>Sora</option><option>Runway</option><option>Kling</option><option>Veo</option>
+            <option>v0</option><option>Lovable</option><option>Bolt</option><option>Cursor</option>
+          </datalist>
+        </div>
+        <div>
+          <label class="field-label">Prompt <span class="text-red-500">*</span></label>
+          <textarea id="pf-prompt" rows="7" placeholder="Paste or write the prompt here..."
+            class="field-input font-mono text-[13px] leading-relaxed"></textarea>
+        </div>
+        <div>
+          <label class="field-label">Notes <span class="text-zinc-600 font-normal">(optional)</span></label>
+          <textarea id="pf-notes" rows="2" placeholder="What worked, what to tweak, settings used..."
+            class="field-input text-sm"></textarea>
+        </div>
+        <div>
+          <label class="field-label">Tags <span class="text-zinc-600 font-normal">(comma separated)</span></label>
+          <input id="pf-tags" type="text" placeholder="e.g. landing-page, dark-theme, hero-image"
+            class="field-input" />
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-zinc-800 flex justify-end gap-2">
+        <button id="pf-cancel" class="btn-secondary" data-close>Cancel</button>
+        <button id="pf-save" class="btn-primary">Save Prompt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Detail modal ===== -->
+  <div id="modal-detail" class="modal hidden fixed inset-0 z-50">
+    <div class="modal-backdrop absolute inset-0 bg-black/70 " data-close></div>
+    <div class="modal-panel relative mx-auto mt-[4vh] mb-8 w-[min(980px,calc(100%-2rem))] bg-zinc-900 border border-zinc-800 rounded-2xl max-h-[90vh] overflow-y-auto">
+      <div id="dm-content"></div>
+    </div>
+  </div>
+
+  <!-- ===== Add result modal ===== -->
+  <div id="modal-result" class="modal hidden fixed inset-0 z-[60]">
+    <div class="modal-backdrop absolute inset-0 bg-black/70 " data-close></div>
+    <div class="modal-panel relative mx-auto mt-[10vh] mb-8 w-[min(560px,calc(100%-2rem))] bg-zinc-900 border border-zinc-800 rounded-2xl max-h-[80vh] overflow-y-auto">
+      <div class="sticky top-0 bg-zinc-900 border-b border-zinc-800 px-6 py-4 flex items-center justify-between z-10">
+        <h2 id="rm-title" class="text-base font-semibold text-white">Add Result</h2>
+        <button class="icon-btn" data-close><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div id="rm-body" class="px-6 py-5"></div>
+    </div>
+  </div>
+
+  <!-- ===== Export modal ===== -->
+  <div id="modal-export" class="modal hidden fixed inset-0 z-50">
+    <div class="modal-backdrop absolute inset-0 bg-black/70 " data-close></div>
+    <div class="modal-panel relative mx-auto mt-[16vh] mb-8 w-[min(460px,calc(100%-2rem))] bg-zinc-900 border border-zinc-800 rounded-2xl">
+      <div class="px-6 py-5 space-y-4">
+        <h2 class="text-base font-semibold text-white flex items-center gap-2"><span id="icon-export-2"></span> Export Backup</h2>
+        <p id="ex-summary" class="text-sm text-zinc-400"></p>
+        <label class="flex items-start gap-2.5 text-sm cursor-pointer select-none">
+          <input id="ex-media" type="checkbox" checked class="mt-0.5 accent-yellow-400 w-4 h-4" />
+          <span>
+            <span class="text-zinc-200 font-medium">Include uploaded media</span>
+            <span class="block text-xs text-zinc-500 mt-0.5">Images & videos you uploaded get embedded as base64. Links and HTML previews are always included. Uncheck for a small file.</span>
+          </span>
+        </label>
+      </div>
+      <div class="px-6 py-4 border-t border-zinc-800 flex justify-end gap-2">
+        <button id="ex-cancel" class="btn-secondary" data-close>Cancel</button>
+        <button id="ex-go" class="btn-primary">Download .json</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Import modal ===== -->
+  <div id="modal-import" class="modal hidden fixed inset-0 z-50">
+    <div class="modal-backdrop absolute inset-0 bg-black/70 " data-close></div>
+    <div class="modal-panel relative mx-auto mt-[12vh] mb-8 w-[min(500px,calc(100%-2rem))] bg-zinc-900 border border-zinc-800 rounded-2xl">
+      <div class="px-6 py-5 space-y-4">
+        <h2 class="text-base font-semibold text-white flex items-center gap-2"><span id="icon-import-2"></span> Import Backup</h2>
+        <label id="im-dropzone" class="dropzone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-700 rounded-xl py-8 px-4 text-center cursor-pointer hover:border-yellow-400 hover:bg-yellow-400/10 transition">
+          <input id="im-file" type="file" accept=".json,application/json" class="hidden" />
+          <svg class="w-7 h-7 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+          <span class="text-sm text-zinc-400">Drop a <span class="text-zinc-200 font-medium">.json</span> backup here, or click to browse</span>
+        </label>
+        <div id="im-summary" class="hidden text-sm rounded-lg border border-zinc-800 bg-black px-3 py-2.5 text-zinc-300"></div>
+        <div id="im-mode-wrap" class="hidden space-y-1.5">
+          <label class="flex items-center gap-2.5 text-sm cursor-pointer">
+            <input type="radio" name="im-mode" value="merge" checked class="accent-yellow-400 w-4 h-4" />
+            <span><span class="text-zinc-200 font-medium">Merge</span> <span class="text-zinc-500">— add imported prompts to existing ones</span></span>
+          </label>
+          <label class="flex items-center gap-2.5 text-sm cursor-pointer">
+            <input type="radio" name="im-mode" value="replace" class="accent-yellow-400 w-4 h-4" />
+            <span><span class="text-zinc-200 font-medium">Replace all</span> <span class="text-zinc-500">— delete everything first</span></span>
+          </label>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-zinc-800 flex justify-end gap-2">
+        <button id="im-cancel" class="btn-secondary" data-close>Cancel</button>
+        <button id="im-go" class="btn-primary" disabled>Import</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Confirm modal ===== -->
+  <div id="modal-confirm" class="modal hidden fixed inset-0 z-[70]">
+    <div class="modal-backdrop absolute inset-0 bg-black/70 " data-close></div>
+    <div class="modal-panel relative mx-auto mt-[22vh] mb-8 w-[min(420px,calc(100%-2rem))] bg-zinc-900 border border-zinc-800 rounded-2xl">
+      <div class="px-6 py-5">
+        <h2 id="cm-title" class="text-base font-semibold text-white"></h2>
+        <p id="cm-msg" class="text-sm text-zinc-400 mt-2"></p>
+      </div>
+      <div class="px-6 py-4 border-t border-zinc-800 flex justify-end gap-2">
+        <button id="cm-cancel" class="btn-secondary" data-close>Cancel</button>
+        <button id="cm-ok" class="px-3.5 py-2 rounded-lg text-sm font-semibold bg-red-600 hover:bg-red-500 text-white transition">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Lightbox ===== -->
+  <div id="lightbox" class="hidden fixed inset-0 z-[80] bg-black/90 cursor-zoom-out items-center justify-center p-6">
+    <img id="lb-img" class="max-w-full max-h-full object-contain rounded-lg" alt="" />
+  </div>
+
+  <!-- ===== Toasts ===== -->
+  <div id="toasts" class="fixed bottom-5 right-5 z-[90] flex flex-col gap-2 items-end"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+/* =====================================================================
+   Theme 4 — "Clean Blue" (modern SaaS: putih / slate / gradient biru)
+   Aktivasi: body.theme4 (dropdown Theme di header)
+   Design language: font system-ui, card putih border #e6e4e4 radius
+   0.5rem, teks #0f172a / #475569, CTA gradient #055ffc -> #004ecc
+   dengan hover terangkat + pulse effect.
+   ===================================================================== */
+
+body.theme4 {
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --grid-line: #e2e8f0;
+}
+
+/* ---------- Surface & text swaps ---------- */
+
+body.theme4 .bg-zinc-900 { background-color: #ffffff !important; }
+body.theme4 .bg-zinc-800 { background-color: #eef2f6 !important; }
+body.theme4 .hover\:bg-zinc-800:hover { background-color: #f1f5f9 !important; }
+
+body.theme4 .text-white { color: #0f172a !important; }
+body.theme4 .text-black { color: #ffffff !important; }
+body.theme4 .text-zinc-100,
+body.theme4 .text-zinc-200,
+body.theme4 .text-zinc-300 { color: #0f172a !important; }
+body.theme4 .text-zinc-400 { color: #475569 !important; }
+body.theme4 .text-zinc-500 { color: #64748b !important; }
+body.theme4 .text-zinc-600 { color: #94a3b8 !important; }
+
+body.theme4 .border-zinc-800,
+body.theme4 .border-zinc-800\/80,
+body.theme4 .border-zinc-700,
+body.theme4 .hover\:border-zinc-700:hover { border-color: #e6e4e4 !important; }
+
+/* aksen: kuning -> biru #055ffc */
+body.theme4 .bg-yellow-400 { background-color: #055ffc !important; }
+body.theme4 .hover\:bg-yellow-300:hover { background-color: #004ecc !important; }
+body.theme4 .text-yellow-400,
+body.theme4 .text-yellow-300 { color: #055ffc !important; }
+body.theme4 .hover\:text-yellow-300:hover { color: #004ecc !important; }
+body.theme4 .focus\:border-yellow-400:focus { border-color: #055ffc !important; }
+body.theme4 .focus\:ring-yellow-400:focus { --tw-ring-color: rgba(5, 95, 252, 0.35) !important; }
+body.theme4 .accent-yellow-400 { accent-color: #055ffc !important; }
+
+/* tombol merah kekal putih */
+body.theme4 .bg-red-600 { color: #fff !important; }
+
+/* ---------- Header ---------- */
+
+body.theme4 header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e9e7e4 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+body.theme4 header button {
+  border: 1px solid #e6e4e4 !important;
+  border-radius: 0.375rem !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  transition: all 0.2s ease-in-out !important;
+}
+body.theme4 header button:hover {
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(15, 23, 42, 0.08);
+}
+body.theme4 #search-input {
+  border-radius: 0.375rem !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  background: #fff !important;
+}
+body.theme4 #search-input:focus {
+  border-color: #055ffc !important;
+  outline: none;
+}
+
+/* ---------- Cards ---------- */
+
+body.theme4 .prompt-card {
+  background: #fff !important;
+  border: 1px solid #e6e4e4 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+body.theme4 .prompt-card:hover {
+  border-color: #d5dee9 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1) !important;
+}
+body.theme4 .prompt-card .img-checker {
+  background-color: #f1f5f9 !important;
+  background-image: conic-gradient(#eef2f6 0 25%, #f8fafc 0 50%, #eef2f6 0 75%, #f8fafc 0) !important;
+  background-size: 16px 16px !important;
+}
+body.theme4 .prompt-card .absolute.top-2.left-2 span {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
+  color: #055ffc !important;
+}
+body.theme4 .prompt-card .absolute.top-2.right-2 {
+  background: rgba(255, 255, 255, 0.92) !important;
+}
+body.theme4 .prompt-card .border-t { border-color: #eef1f5 !important; }
+
+/* ---------- Buttons, pills, chips ---------- */
+
+body.theme4 .btn-primary {
+  position: relative;
+  overflow: visible;
+  background: linear-gradient(to bottom, #055ffc, #004ecc) !important;
+  color: #ffffff !important;
+  border: 1px solid #0044bb !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 2px 4px rgba(5, 95, 252, 0.3) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+body.theme4 .btn-primary:hover {
+  background: linear-gradient(to bottom, #004ecc, #003aa0) !important;
+  box-shadow: 0 4px 8px rgba(5, 95, 252, 0.4) !important;
+  transform: translateY(-1px);
+}
+body.theme4 .btn-primary:active { transform: translateY(0); }
+
+/* pulse effect (spesifikasi .cta-button::after) */
+body.theme4 .btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.375rem;
+  background-color: rgba(5, 95, 252, 0.3);
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+  pointer-events: none;
+}
+body.theme4 .btn-primary:active::after {
+  animation: t4-pulse 0.9s ease-out;
+}
+@keyframes t4-pulse {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+}
+
+body.theme4 .btn-secondary {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border: 1px solid #e6e4e4 !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+body.theme4 .btn-secondary:hover {
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(15, 23, 42, 0.08) !important;
+}
+
+body.theme4 .filter-pill {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border: 1px solid #e6e4e4 !important;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+body.theme4 .filter-pill:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+}
+body.theme4 .filter-pill.active {
+  background: linear-gradient(to bottom, #055ffc, #004ecc) !important;
+  color: #ffffff !important;
+  border-color: #0044bb !important;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(5, 95, 252, 0.3) !important;
+}
+
+body.theme4 .tag-chip {
+  background: #eff6ff !important;
+  color: #055ffc !important;
+  border: 1px solid #dbeafe !important;
+  font-weight: 600;
+  transition: all 0.15s ease !important;
+}
+body.theme4 .tag-chip:hover { background: #dbeafe !important; }
+body.theme4 .tag-chip.active {
+  background: #055ffc !important;
+  color: #ffffff !important;
+  border-color: #0044bb !important;
+}
+
+body.theme4 .icon-btn { color: #94a3b8 !important; }
+body.theme4 .icon-btn:hover {
+  background: #f1f5f9 !important;
+  color: #055ffc !important;
+}
+
+/* ---------- Form fields ---------- */
+
+body.theme4 .field-label { color: #0f172a; font-weight: 600; }
+body.theme4 .field-input {
+  background: #ffffff !important;
+  border: 1px solid #e6e4e4 !important;
+  border-radius: 0.375rem !important;
+  color: #0f172a !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+body.theme4 .field-input::placeholder { color: #94a3b8; }
+body.theme4 .field-input:focus {
+  border-color: #055ffc !important;
+  box-shadow: 0 0 0 3px rgba(5, 95, 252, 0.15) !important;
+}
+body.theme4 select {
+  border: 1px solid #e6e4e4 !important;
+  border-radius: 0.375rem !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* ---------- Modals ---------- */
+
+body.theme4 .modal-backdrop { background: rgba(15, 23, 42, 0.4) !important; }
+body.theme4 .modal-panel {
+  background: #ffffff !important;
+  border: 1px solid #e6e4e4 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15) !important;
+}
+body.theme4 .modal-panel .sticky {
+  border-bottom: 1px solid #eef1f5 !important;
+}
+
+/* blok prompt: code block gelap slate */
+body.theme4 #dm-content pre {
+  border: 1px solid #1e293b !important;
+  border-radius: 0.5rem !important;
+  color: #e2e8f0 !important;
+}
+
+/* result cards dalam detail */
+body.theme4 #dm-content div.grid > div {
+  background: #ffffff !important;
+  border: 1px solid #e9e7e4 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+}
+body.theme4 #dm-content div.grid > div .img-checker {
+  background-color: #f1f5f9 !important;
+  background-image: conic-gradient(#eef2f6 0 25%, #f8fafc 0 50%, #eef2f6 0 75%, #f8fafc 0) !important;
+}
+body.theme4 #dm-content .border-t { border-color: #eef1f5 !important; }
+
+/* ---------- Dropzone, toast, misc ---------- */
+
+body.theme4 .dropzone {
+  border: 2px dashed #d9dce1 !important;
+  border-radius: 0.5rem !important;
+  background: #fbfcfe !important;
+  transition: all 0.2s ease-in-out !important;
+}
+body.theme4 .dropzone:hover { border-color: #94a3b8 !important; }
+body.theme4 .dropzone.dragover {
+  border-color: #055ffc !important;
+  background: rgba(5, 95, 252, 0.05) !important;
+}
+
+body.theme4 .toast {
+  border: 1px solid #e6e4e4 !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12) !important;
+  font-weight: 500;
+}
+body.theme4 .toast-success {
+  background: linear-gradient(to bottom, #055ffc, #004ecc) !important;
+  color: #fff !important;
+  border-color: #0044bb !important;
+}
+body.theme4 .toast-error { background: #dc2626 !important; color: #fff !important; border-color: #b91c1c !important; }
+body.theme4 .toast-info { background: #ffffff !important; color: #0f172a !important; }
+
+body.theme4 #im-summary {
+  border: 1px solid #e6e4e4 !important;
+  border-radius: 0.375rem !important;
+  background: #f8fafc !important;
+  color: #334155 !important;
+}
+body.theme4 #im-summary [class*="text-yellow"] { color: #055ffc !important; }
+
+/* empty state: spesifikasi .no-deployments-container */
+body.theme4 #empty-state {
+  background: #ffffff;
+  border: 1px solid #e6e4e4;
+  border-radius: 0.5rem;
+  max-width: 24rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 3rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+body.theme4 #empty-state .bg-zinc-900 {
+  background: #ffffff !important;
+  border: 1px solid #e6e4e4 !important;
+  color: #055ffc !important;
+}
+
+body.theme4 #lightbox { background: rgba(15, 23, 42, 0.9) !important; }
+
+/* ---------- Scrollbar & selection ---------- */
+
+body.theme4 ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-color: #f8fafc;
+}
+body.theme4 ::-webkit-scrollbar-thumb:hover { background: #055ffc; }
+body.theme4 ::selection {
+  background: rgba(5, 95, 252, 0.2);
+  color: #0f172a;
+}

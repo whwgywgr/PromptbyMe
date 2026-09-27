@@ -1,0 +1,355 @@
+/* =====================================================================
+   Theme 5 — "3D Sandy" (corak salmon / card pasir / aksen mustard)
+   Aktivasi: body.theme5 (dropdown Theme di header)
+   Design language: latar putih dengan corak segitiga #ffa07a, card
+   pasir rgba(223,216,179) border hitam 3px radius besar, hard shadow
+   lembut, badge mustard #f4c430, kesan 3D tilt + gloss saat hover,
+   font Arial.
+   ===================================================================== */
+
+body.theme5 {
+  font-family: Arial, sans-serif;
+  color: #1a1a1a;
+  background:
+    linear-gradient(135deg, #ffa07a 25%, transparent 25%) -50px 0,
+    linear-gradient(225deg, #ffa07a 25%, transparent 25%) -50px 0,
+    linear-gradient(315deg, #ffa07a 25%, transparent 25%),
+    linear-gradient(45deg, #ffa07a 25%, transparent 25%);
+  background-size: 100px 100px;
+  background-color: #ffffff;
+  /* garis grid putih lutsinar supaya corak zigzag kekal asas */
+  --grid-line: rgba(255, 255, 255, 0.4);
+}
+
+body.theme5 h1,
+body.theme5 h2,
+body.theme5 h3 {
+  font-weight: 700 !important;
+}
+
+/* ---------- Surface & text swaps ---------- */
+
+body.theme5 .bg-zinc-900 { background-color: #dfd8b3 !important; }
+body.theme5 .hover\:bg-zinc-800:hover { background-color: #d4cba6 !important; }
+body.theme5 .bg-zinc-800 { background-color: #000000 !important; }
+
+body.theme5 .text-white { color: #1a1a1a !important; }
+body.theme5 .text-zinc-100,
+body.theme5 .text-zinc-200,
+body.theme5 .text-zinc-300 { color: #1a1a1a !important; }
+body.theme5 .text-zinc-400 { color: #3d3d3d !important; }
+body.theme5 .text-zinc-500 { color: #5a5a52 !important; }
+body.theme5 .text-zinc-600 { color: #7a7a6e !important; }
+
+body.theme5 .border-zinc-800,
+body.theme5 .border-zinc-800\/80,
+body.theme5 .border-zinc-700,
+body.theme5 .hover\:border-zinc-700:hover { border-color: #000 !important; }
+
+/* aksen: kuning -> mustard */
+body.theme5 .bg-yellow-400 { background-color: #f4c430 !important; }
+body.theme5 .hover\:bg-yellow-300:hover { background-color: #ffdb58 !important; }
+body.theme5 .text-yellow-400,
+body.theme5 .text-yellow-300 { color: #a57c00 !important; }
+body.theme5 .hover\:text-yellow-300:hover { color: #7a5c00 !important; }
+body.theme5 .focus\:border-yellow-400:focus { border-color: #f4c430 !important; }
+body.theme5 .focus\:ring-yellow-400:focus { --tw-ring-color: rgba(244, 196, 48, 0.45) !important; }
+body.theme5 .accent-yellow-400 { accent-color: #f4c430 !important; }
+
+/* tombol merah kekal putih */
+body.theme5 .bg-red-600 { color: #fff !important; }
+
+/* ---------- Header ---------- */
+
+body.theme5 header {
+  background: #dfd8b3 !important;
+  border-bottom: 3px solid #000 !important;
+}
+body.theme5 header button {
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  background: #fdf9ec !important;
+  color: #1a1a1a !important;
+  font-weight: 700;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+body.theme5 header button:hover {
+  background: #ffdb58 !important;
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.25) !important;
+}
+body.theme5 header button:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2) !important;
+}
+body.theme5 #search-input {
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  background: #fdf9ec !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15) !important;
+  font-weight: 600;
+}
+body.theme5 #search-input:focus {
+  border-color: #f4c430 !important;
+  outline: none;
+}
+
+/* ---------- Cards (spesifikasi .card) ---------- */
+
+body.theme5 #grid { perspective: 1200px; }
+
+body.theme5 .prompt-card {
+  background-color: rgba(223, 216, 179, 0.92) !important;
+  border: 3px solid #000 !important;
+  border-radius: 20px !important;
+  box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.1) !important;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+body.theme5 .prompt-card:hover {
+  border-color: #000 !important;
+  transform: translateZ(20px) rotateX(5deg) rotateY(-5deg) !important;
+  box-shadow: 20px 20px 0 rgba(0, 0, 0, 0.2) !important;
+}
+/* gloss sheen (spesifikasi .card::before) */
+body.theme5 .prompt-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 80%);
+  transform: rotate(-30deg);
+  pointer-events: none;
+  z-index: 1;
+}
+body.theme5 .prompt-card .img-checker {
+  background-color: #f2edda !important;
+  background-image: conic-gradient(#eee8d0 0 25%, #f7f3e3 0 50%, #eee8d0 0 75%, #f7f3e3 0) !important;
+  background-size: 16px 16px !important;
+}
+/* badge jenis: chip putih border hitam, "pop" macam .emoji saat hover */
+body.theme5 .prompt-card .absolute.top-2.left-2 span {
+  background: #fffdf5 !important;
+  border: 2px solid #000 !important;
+  color: #1a1a1a !important;
+  transition: transform 0.3s ease-out !important;
+}
+body.theme5 .prompt-card:hover .absolute.top-2.left-2 span {
+  transform: rotate(-10deg) scale(1.12);
+}
+body.theme5 .prompt-card .absolute.top-2.right-2 {
+  background: rgba(255, 253, 245, 0.92) !important;
+  border: 2px solid #000;
+}
+/* chip "N results": badge mustard (spesifikasi .handle) */
+body.theme5 .prompt-card .bg-yellow-400 {
+  border: 2px solid #000 !important;
+  transition: background-color 0.3s ease-out !important;
+}
+body.theme5 .prompt-card:hover .bg-yellow-400 {
+  background-color: #ffdb58 !important;
+}
+body.theme5 .prompt-card .border-t { border-color: #000 !important; }
+
+/* ---------- Buttons, pills, chips ---------- */
+
+body.theme5 .btn-primary {
+  background: #f4c430 !important;
+  color: #1a1a1a !important;
+  border: 3px solid #000 !important;
+  border-radius: 14px !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2) !important;
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+body.theme5 .btn-primary:hover {
+  background: #ffdb58 !important;
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.25) !important;
+}
+body.theme5 .btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2) !important;
+}
+
+body.theme5 .btn-secondary {
+  background: #fdf9ec !important;
+  color: #1a1a1a !important;
+  border: 3px solid #000 !important;
+  border-radius: 14px !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.15) !important;
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+body.theme5 .btn-secondary:hover {
+  background: #fff !important;
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.18) !important;
+}
+body.theme5 .btn-secondary:active {
+  transform: translateY(2px);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+body.theme5 .filter-pill {
+  background: #fdf9ec !important;
+  color: #1a1a1a !important;
+  border: 2px solid #000 !important;
+  font-weight: 700;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+body.theme5 .filter-pill:hover {
+  background: #ffdb58 !important;
+  translate: 1px 1px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2) !important;
+}
+body.theme5 .filter-pill.active {
+  background: #f4c430 !important;
+  color: #1a1a1a !important;
+  border-color: #000 !important;
+}
+
+/* tag: chip salmon (warna corak latar) */
+body.theme5 .tag-chip {
+  background: #ffa07a !important;
+  color: #1a1a1a !important;
+  border: 2px solid #000 !important;
+  font-weight: 700;
+  transition: all 0.2s ease !important;
+}
+body.theme5 .tag-chip:hover { background: #ffb894 !important; }
+body.theme5 .tag-chip.active {
+  background: #f4c430 !important;
+  color: #1a1a1a !important;
+  border-color: #000 !important;
+}
+
+body.theme5 .icon-btn { color: #3d3d3d !important; }
+body.theme5 .icon-btn:hover {
+  background: #1a1a1a !important;
+  color: #ffdb58 !important;
+}
+
+/* ---------- Form fields ---------- */
+
+body.theme5 .field-label { color: #1a1a1a; font-weight: 700; }
+body.theme5 .field-input {
+  background: #fffdf5 !important;
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  color: #1a1a1a !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+body.theme5 .field-input::placeholder { color: #8a8574; }
+body.theme5 .field-input:focus {
+  border-color: #f4c430 !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15) !important;
+}
+body.theme5 select {
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  background: #fdf9ec !important;
+  color: #1a1a1a !important;
+  font-weight: 600;
+}
+
+/* ---------- Modals ---------- */
+
+body.theme5 .modal-backdrop { background: rgba(0, 0, 0, 0.35) !important; }
+body.theme5 .modal-panel {
+  background: rgba(223, 216, 179, 0.96) !important;
+  border: 3px solid #000 !important;
+  border-radius: 20px !important;
+  box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.15) !important;
+}
+body.theme5 .modal-panel .sticky {
+  border-bottom: 3px solid #000 !important;
+}
+
+/* blok prompt: kertas putih */
+body.theme5 #dm-content pre {
+  background: #fffdf5 !important;
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.12) !important;
+  color: #1a1a1a !important;
+}
+
+/* result cards: putih + tilt 3D halus */
+body.theme5 #dm-content div.grid { perspective: 900px; }
+body.theme5 #dm-content div.grid > div {
+  background: #fffdf5 !important;
+  border: 3px solid #000 !important;
+  border-radius: 16px !important;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.12) !important;
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+body.theme5 #dm-content div.grid > div:hover {
+  transform: translateZ(10px) rotateX(3deg) rotateY(-3deg);
+  box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.18) !important;
+}
+body.theme5 #dm-content div.grid > div .img-checker {
+  background-color: #f2edda !important;
+  background-image: conic-gradient(#eee8d0 0 25%, #f7f3e3 0 50%, #eee8d0 0 75%, #f7f3e3 0) !important;
+}
+body.theme5 #dm-content .border-t { border-color: #000 !important; }
+
+/* ---------- Dropzone, toast, misc ---------- */
+
+body.theme5 .dropzone {
+  border: 3px dashed #000 !important;
+  border-radius: 16px !important;
+  background: #fffdf5 !important;
+  transition: all 0.2s ease !important;
+}
+body.theme5 .dropzone:hover { background: #ffdb5833 !important; }
+body.theme5 .dropzone.dragover {
+  border-color: #f4c430 !important;
+  background: rgba(244, 196, 48, 0.15) !important;
+}
+
+body.theme5 .toast {
+  border: 3px solid #000 !important;
+  border-radius: 14px !important;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.2) !important;
+  font-weight: 700;
+}
+body.theme5 .toast-success { background: #f4c430 !important; color: #1a1a1a !important; }
+body.theme5 .toast-error { background: #e11d48 !important; color: #fff !important; }
+body.theme5 .toast-info { background: #fffdf5 !important; color: #1a1a1a !important; }
+
+body.theme5 #im-summary {
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  background: #fffdf5 !important;
+  color: #1a1a1a !important;
+}
+body.theme5 #im-summary [class*="text-yellow"] { color: #a57c00 !important; }
+
+body.theme5 #empty-state .bg-zinc-900 {
+  background: #f4c430 !important;
+  border: 3px solid #000 !important;
+  border-radius: 20px !important;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.15) !important;
+  color: #1a1a1a !important;
+}
+
+body.theme5 #lightbox { background: rgba(20, 16, 8, 0.9) !important; }
+
+/* ---------- Scrollbar & selection ---------- */
+
+body.theme5 ::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border-color: #fff;
+}
+body.theme5 ::-webkit-scrollbar-thumb:hover { background: #f4c430; }
+body.theme5 ::selection {
+  background: #f4c430;
+  color: #1a1a1a;
+}

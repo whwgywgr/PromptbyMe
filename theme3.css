@@ -1,0 +1,292 @@
+/* =====================================================================
+   Theme 3 — "Soft Light" (putih / biru #1389eb / kelabu lembut)
+   Aktivasi: body.theme3 (app.js - tombol Theme cycle 1 -> 2 -> 3)
+   Design language: card putih rounded, diffuse shadow lembut, teks
+   #2e2e2f, muted #9fa4aa, aksen biru, tag pill biru, border dashed
+   halus yang muncul saat hover.
+   ===================================================================== */
+
+body.theme3 {
+  background: #f4f5f7;
+  color: #2e2e2f;
+  --grid-line: #e2e8f0;
+}
+
+/* ---------- Surface & text swaps ---------- */
+
+body.theme3 .bg-zinc-900 { background-color: #ffffff !important; }
+body.theme3 .bg-zinc-800 { background-color: #eef1f4 !important; }
+body.theme3 .hover\:bg-zinc-800:hover { background-color: #f5f7f9 !important; }
+
+body.theme3 .text-white { color: #2e2e2f !important; }
+body.theme3 .text-black { color: #ffffff !important; }
+body.theme3 .text-zinc-100,
+body.theme3 .text-zinc-200,
+body.theme3 .text-zinc-300 { color: #2e2e2f !important; }
+body.theme3 .text-zinc-400 { color: #6e7880 !important; }
+body.theme3 .text-zinc-500 { color: #9fa4aa !important; }
+body.theme3 .text-zinc-600 { color: #b9c0c7 !important; }
+
+body.theme3 .border-zinc-800,
+body.theme3 .border-zinc-800\/80,
+body.theme3 .border-zinc-700,
+body.theme3 .hover\:border-zinc-700:hover { border-color: #e3e7ec !important; }
+
+/* aksen: kuning -> biru */
+body.theme3 .bg-yellow-400 { background-color: #1389eb !important; }
+body.theme3 .hover\:bg-yellow-300:hover { background-color: #0f6fc4 !important; }
+body.theme3 .text-yellow-400,
+body.theme3 .text-yellow-300 { color: #1389eb !important; }
+body.theme3 .hover\:text-yellow-300:hover { color: #0f6fc4 !important; }
+body.theme3 .focus\:border-yellow-400:focus { border-color: #1389eb !important; }
+body.theme3 .focus\:ring-yellow-400:focus { --tw-ring-color: rgba(19, 137, 235, 0.35) !important; }
+body.theme3 .accent-yellow-400 { accent-color: #1389eb !important; }
+
+/* tombol merah kekal putih */
+body.theme3 .bg-red-600 { color: #fff !important; }
+
+/* ---------- Header ---------- */
+
+body.theme3 header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e9edf1 !important;
+  box-shadow: 0 1px 3px rgba(99, 99, 99, 0.08);
+}
+body.theme3 header button {
+  border: 1px solid #e3e7ec !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #2e2e2f !important;
+  font-weight: 600;
+  box-shadow: rgba(99, 99, 99, 0.1) 0 2px 8px 0;
+  transition: all 0.25s ease !important;
+}
+body.theme3 header button:hover {
+  background: #f7f9fb !important;
+  border-color: rgba(162, 179, 207, 0.5) !important;
+  box-shadow: rgba(99, 99, 99, 0.3) 0 2px 8px 0;
+}
+body.theme3 #search-input {
+  border-radius: 8px !important;
+  box-shadow: rgba(99, 99, 99, 0.1) 0 2px 8px 0;
+  background: #fff !important;
+}
+body.theme3 #search-input:focus {
+  border-color: #1389eb !important;
+  outline: none;
+}
+
+/* ---------- Cards (spesifikasi .task) ---------- */
+
+body.theme3 .prompt-card {
+  background: #fff !important;
+  border: 3px dashed transparent !important;
+  border-radius: 10px !important;
+  box-shadow: rgba(99, 99, 99, 0.1) 0 2px 8px 0 !important;
+  transition: all 0.25s ease !important;
+}
+body.theme3 .prompt-card:hover {
+  border-color: rgba(162, 179, 207, 0.45) !important;
+  box-shadow: rgba(99, 99, 99, 0.3) 0 2px 8px 0 !important;
+}
+body.theme3 .prompt-card .img-checker {
+  background-color: #f0f2f5 !important;
+  background-image: conic-gradient(#eef0f3 0 25%, #f7f8fa 0 50%, #eef0f3 0 75%, #f7f8fa 0) !important;
+  background-size: 16px 16px !important;
+}
+/* badge jenis hasil: chip putih ikon biru */
+body.theme3 .prompt-card .absolute.top-2.left-2 span {
+  background: #ffffff !important;
+  border: 1px solid #e3e7ec;
+  color: #1389eb !important;
+}
+body.theme3 .prompt-card .absolute.top-2.right-2 {
+  background: rgba(255, 255, 255, 0.92) !important;
+}
+body.theme3 .prompt-card .border-t { border-color: #eef1f4 !important; }
+
+/* ---------- Buttons, pills, chips ---------- */
+
+body.theme3 .btn-primary {
+  background: #1389eb !important;
+  color: #fff !important;
+  border: 1px solid #1389eb !important;
+  border-radius: 8px !important;
+  box-shadow: rgba(19, 137, 235, 0.25) 0 2px 8px 0 !important;
+  transition: all 0.25s ease !important;
+}
+body.theme3 .btn-primary:hover {
+  background: #0f6fc4 !important;
+  border-color: #0f6fc4 !important;
+  box-shadow: rgba(19, 137, 235, 0.4) 0 4px 12px 0 !important;
+}
+body.theme3 .btn-primary:disabled { opacity: 0.45; }
+
+body.theme3 .btn-secondary {
+  background: #ffffff !important;
+  color: #2e2e2f !important;
+  border: 1px solid #e3e7ec !important;
+  border-radius: 8px !important;
+  box-shadow: rgba(99, 99, 99, 0.1) 0 2px 8px 0 !important;
+  transition: all 0.25s ease !important;
+}
+body.theme3 .btn-secondary:hover {
+  border-color: rgba(162, 179, 207, 0.6) !important;
+  background: #f7f9fb !important;
+  box-shadow: rgba(99, 99, 99, 0.3) 0 2px 8px 0 !important;
+}
+
+body.theme3 .filter-pill {
+  background: #ffffff !important;
+  color: #2e2e2f !important;
+  border: 1px solid #e3e7ec !important;
+  font-weight: 500;
+  box-shadow: rgba(99, 99, 99, 0.08) 0 1px 4px 0 !important;
+  transition: all 0.25s ease !important;
+}
+body.theme3 .filter-pill:hover {
+  border-color: rgba(162, 179, 207, 0.6) !important;
+  box-shadow: rgba(99, 99, 99, 0.25) 0 2px 8px 0 !important;
+}
+body.theme3 .filter-pill.active {
+  background: #1389eb !important;
+  color: #ffffff !important;
+  border-color: #1389eb !important;
+  font-weight: 600;
+}
+
+/* tag: spesifikasi .tag — pill biru teks putih */
+body.theme3 .tag-chip {
+  background: #1389eb !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: 100px !important;
+  font-weight: 600;
+  transition: background 0.2s ease !important;
+}
+body.theme3 .tag-chip:hover { background: #0f6fc4 !important; }
+body.theme3 .tag-chip.active {
+  background: #0b5a9e !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 2px #f4f5f7, 0 0 0 4px #1389eb !important;
+}
+
+body.theme3 .icon-btn { color: #9fa4aa !important; }
+body.theme3 .icon-btn:hover {
+  background: rgba(19, 137, 235, 0.08) !important;
+  color: #1389eb !important;
+}
+
+/* ---------- Form fields ---------- */
+
+body.theme3 .field-label { color: #2e2e2f; }
+body.theme3 .field-input {
+  background: #ffffff !important;
+  border: 1px solid #e3e7ec !important;
+  border-radius: 8px !important;
+  color: #2e2e2f !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+body.theme3 .field-input::placeholder { color: #b9c0c7; }
+body.theme3 .field-input:focus {
+  border-color: #1389eb !important;
+  box-shadow: 0 0 0 3px rgba(19, 137, 235, 0.15) !important;
+}
+body.theme3 select {
+  border: 1px solid #e3e7ec !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #2e2e2f !important;
+}
+
+/* ---------- Modals ---------- */
+
+body.theme3 .modal-backdrop { background: rgba(46, 55, 65, 0.4) !important; }
+body.theme3 .modal-panel {
+  background: #ffffff !important;
+  border: 1px solid #eceff3 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 30px rgba(99, 99, 99, 0.18) !important;
+}
+body.theme3 .modal-panel .sticky {
+  border-bottom: 1px solid #eef1f4 !important;
+}
+
+/* blok prompt: code block gaya terang */
+body.theme3 #dm-content pre {
+  background: #f6f8fa !important;
+  border: 1px solid #e3e7ec !important;
+  border-radius: 8px !important;
+  color: #2e2e2f !important;
+}
+
+/* result cards dalam detail */
+body.theme3 #dm-content div.grid > div {
+  background: #ffffff !important;
+  border: 1px solid #e9edf1 !important;
+  border-radius: 10px !important;
+  box-shadow: rgba(99, 99, 99, 0.1) 0 2px 8px 0 !important;
+}
+body.theme3 #dm-content div.grid > div .img-checker {
+  background-color: #f0f2f5 !important;
+  background-image: conic-gradient(#eef0f3 0 25%, #f7f8fa 0 50%, #eef0f3 0 75%, #f7f8fa 0) !important;
+}
+body.theme3 #dm-content .border-t { border-color: #eef1f4 !important; }
+
+/* ---------- Dropzone, toast, misc ---------- */
+
+body.theme3 .dropzone {
+  border: 2px dashed #d6dce3 !important;
+  border-radius: 10px !important;
+  background: #fbfcfd !important;
+  transition: all 0.2s ease !important;
+}
+body.theme3 .dropzone:hover {
+  border-color: rgba(162, 179, 207, 0.8) !important;
+}
+body.theme3 .dropzone.dragover {
+  border-color: #1389eb !important;
+  background: rgba(19, 137, 235, 0.06) !important;
+}
+
+body.theme3 .toast {
+  border: 1px solid #e9edf1 !important;
+  border-radius: 8px !important;
+  box-shadow: rgba(99, 99, 99, 0.3) 0 2px 8px 0 !important;
+  font-weight: 500;
+}
+body.theme3 .toast-success { background: #1389eb !important; color: #fff !important; }
+body.theme3 .toast-error { background: #e11d48 !important; color: #fff !important; }
+body.theme3 .toast-info {
+  background: #ffffff !important;
+  color: #2e2e2f !important;
+}
+
+body.theme3 #im-summary {
+  border: 1px solid #e3e7ec !important;
+  border-radius: 8px !important;
+  background: #f6f8fa !important;
+  color: #2e2e2f !important;
+}
+body.theme3 #im-summary [class*="text-yellow"] { color: #1389eb !important; }
+
+body.theme3 #empty-state .bg-zinc-900 {
+  background: #ffffff !important;
+  border: 1px solid #e3e7ec !important;
+  box-shadow: rgba(99, 99, 99, 0.1) 0 2px 8px 0 !important;
+  color: #1389eb !important;
+}
+
+body.theme3 #lightbox { background: rgba(30, 38, 46, 0.9) !important; }
+
+/* ---------- Scrollbar & selection ---------- */
+
+body.theme3 ::-webkit-scrollbar-thumb {
+  background: #c9d1d9;
+  border-color: #f4f5f7;
+}
+body.theme3 ::-webkit-scrollbar-thumb:hover { background: #9fa4aa; }
+body.theme3 ::selection {
+  background: rgba(19, 137, 235, 0.25);
+  color: #2e2e2f;
+}
