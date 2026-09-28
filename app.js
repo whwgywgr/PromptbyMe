@@ -1308,7 +1308,7 @@ function wireEvents() {
 const THEMES = ['theme1', 'theme2', 'theme3', 'theme4', 'theme5', 'theme6', 'theme7'];
 
 function applyTheme(theme) {
-  const t = THEMES.includes(theme) ? theme : 'theme1';
+  const t = THEMES.includes(theme) ? theme : 'theme3';
   document.body.classList.remove('theme2', 'theme3', 'theme4', 'theme5', 'theme6', 'theme7');
   if (t !== 'theme1') document.body.classList.add(t);
   try { localStorage.setItem(THEME_KEY, t); } catch {}
@@ -1517,7 +1517,7 @@ async function init() {
   $('#icon-theme').innerHTML = icon('palette');
   $('#search-icon').innerHTML = icon('search');
 
-  applyTheme((() => { try { return localStorage.getItem(THEME_KEY); } catch { return null; } })() || 'theme1');
+  applyTheme((() => { try { return localStorage.getItem(THEME_KEY); } catch { return null; } })() || 'theme3');
 
   const user = await authInit();
   await loadPrompts(user);
