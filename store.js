@@ -30,6 +30,7 @@ function rowToResult(r) {
     ...(r.url ? { url: r.url } : {}),
     ...(r.html ? { html: r.html } : {}),
     ...(r.storage_path ? { storage_path: r.storage_path } : {}),
+    ...(r.thumb_path ? { thumb_path: r.thumb_path } : {}),
   };
 }
 
@@ -76,6 +77,7 @@ function resultToRow(r, promptId, position) {
     url: r.url || null,
     html: r.html || null,
     storage_path: r.storage_path || null,
+    thumb_path: r.thumb_path || null,
     position: position || 0,
     created_at: new Date(r.createdAt || Date.now()).toISOString(),
   };
@@ -126,8 +128,9 @@ async function storeUpdatePrompt(id, fields) {
 async function storeDeletePrompt(p) {
   // remove media files first (results cascade-deletes in the DB)
   for (const r of p.results || []) {
-    if (r.source === 'upload' && r.storage_path) {
-      try { await sb().storage.from(MEDIA_BUCKET).remove([r.storage_path]); } catch (e) { console.warn(e); }
+    const paths = [r.storage_path, r.thumb_path].filter(Boolean);
+    if (r.source === 'upload' && paths.length) {
+      try { await sb().storage.from(MEDIA_BUCKET).remove(paths); } catch (e) { console.warn(e); }
     }
   }
   const { error } = await sb().from('prompts').delete().eq('id', p.id);
@@ -156,8 +159,9 @@ async function storeInsertResult(promptId, r, position) {
 }
 
 async function storeDeleteResult(r) {
-  if (r.source === 'upload' && r.storage_path) {
-    try { await sb().storage.from(MEDIA_BUCKET).remove([r.storage_path]); } catch (e) { console.warn(e); }
+  const paths = [r.storage_path, r.thumb_path].filter(Boolean);
+  if (paths.length) {
+    try { await sb().storage.from(MEDIA_BUCKET).remove(paths); } catch (e) { console.warn(e); }
   }
   const { error } = await sb().from('results').delete().eq('id', r.id);
   if (error) throw error;

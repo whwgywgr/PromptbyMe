@@ -41,6 +41,7 @@ const I = {
   check: '<path d="M20 6 9 17l-5-5"/>',
   alert: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  play: '<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',
   layers: '<path d="m12 2 10 5-10 5L2 7l10-5z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/>',
   palette: '<path d="M12 22a10 10 0 1 1 10-10c0 1.66-1.34 3-3 3h-2.2a2 2 0 0 0-1.5 3.33c.35.4.55.9.5 1.42A2.4 2.4 0 0 1 13.4 22H12z"/><circle cx="7.5" cy="12.5" r="1"/><circle cx="9.5" cy="7.8" r="1"/><circle cx="14.5" cy="7.2" r="1"/><circle cx="17.8" cy="11" r="1"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M5 21c0-3.9 3.1-6 7-6s7 2.1 7 6"/>',
@@ -107,6 +108,27 @@ function clearMediaCache() {
   mediaUrlCache.clear();
 }
 
+async function mediaThumbURL(id) {
+  const key = id + '_t';
+  if (mediaUrlCache.has(key)) return mediaUrlCache.get(key);
+  if (cloudMode()) {
+    const r = findResultById(id);
+    if (r && r.thumb_path) {
+      const url = storePublicUrl(r.thumb_path);
+      if (url) mediaUrlCache.set(key, url);
+      return url;
+    }
+    return mediaURL(id); // no thumbnail stored — fall back to the full image
+  }
+  const blob = await getMedia(key);
+  if (blob) {
+    const url = URL.createObjectURL(blob);
+    mediaUrlCache.set(key, url);
+    return url;
+  }
+  return mediaURL(id);
+}
+
 async function mediaURL(id) {
   if (mediaUrlCache.has(id)) return mediaUrlCache.get(id);
   if (cloudMode()) {
@@ -156,6 +178,7 @@ function sanitizePrompt(raw) {
         ...(typeof r.html === 'string' ? { html: r.html } : {}),
         ...(typeof r.dataUrl === 'string' ? { dataUrl: r.dataUrl } : {}),
         ...(typeof r.storage_path === 'string' ? { storage_path: r.storage_path } : {}),
+        ...(typeof r.thumb_path === 'string' ? { thumb_path: r.thumb_path } : {}),
       });
     }
   }
@@ -368,11 +391,16 @@ function cardHTML(p, idx) {
   } else if (preview.kind === 'image') {
     previewHTML = preview.r.source === 'url'
       ? `<img src="${esc(preview.r.url)}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" alt="">`
-      : `<img data-media="${preview.r.id}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="">`;
+      : `<img data-media-thumb="${preview.r.id}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" alt="">`;
   } else if (preview.kind === 'video') {
-    previewHTML = preview.r.source === 'url'
-      ? `<video src="${esc(preview.r.url)}" muted preload="metadata" class="absolute inset-0 w-full h-full object-cover"></video>`
-      : `<video data-media="${preview.r.id}" muted preload="metadata" class="absolute inset-0 w-full h-full object-cover"></video>`;
+    previewHTML = preview.r.thumb_path
+      ? `<img data-media-thumb="${preview.r.id}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" alt="">
+         <span class="absolute inset-0 flex items-center justify-center pointer-events-none">
+           <span class="w-10 h-10 rounded-full bg-black/60 border-2 border-white/90 flex items-center justify-center">${icon('play', 'w-4 h-4 text-white')}</span>
+         </span>`
+      : preview.r.source === 'url'
+        ? `<video src="${esc(preview.r.url)}" muted preload="metadata" class="absolute inset-0 w-full h-full object-cover"></video>`
+        : `<video data-media="${preview.r.id}" muted preload="metadata" class="absolute inset-0 w-full h-full object-cover"></video>`;
   } else {
     previewHTML = `<div class="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-zinc-500 bg-zinc-900">${icon('globe', 'w-8 h-8')}<span class="text-xs">${preview.r.source === 'url' ? esc(hostOf(preview.r.url)) : 'HTML preview'}</span></div>`;
   }
@@ -566,6 +594,11 @@ function hydrateMedia(root) {
     if (url) el.src = url;
     else el.style.display = 'none'; // blob missing (e.g. imported without media)
   });
+  root.querySelectorAll('[data-media-thumb]').forEach(async (el) => {
+    const url = await mediaThumbURL(el.dataset.mediaThumb);
+    if (url) el.src = url;
+    else el.style.display = 'none';
+  });
 }
 
 /* ========================= Prompt CRUD ============================= */
@@ -731,19 +764,32 @@ async function addUploadResults(files) {
     const type = f.type.startsWith('image/') ? 'image' : f.type.startsWith('video/') ? 'video' : null;
     if (!type || type !== state.resultType) { skipped++; continue; }
     const rid = uid();
-    let storage_path = null;
+    let storage_path = null, thumb_path = null, fullBlob = f, displayName = f.name;
     try {
-      if (cloudMode()) {
-        storage_path = await storeUploadMedia(f, rid);
+      if (type === 'image') {
+        const res = await compressImageUpload(f);
+        fullBlob = res.full;
+        if (res.wasReencoded) displayName = f.name.replace(/\.[^.]+$/, '') + pmExtForMime(fullBlob.type || f.type);
+        if (res.thumb) {
+          if (cloudMode()) thumb_path = await storeUploadMedia(res.thumb, rid + '_t');
+          else await putMedia(rid + '_t', res.thumb);
+        }
       } else {
-        await putMedia(rid, f);
+        fullBlob = f;
+        const poster = await makeVideoPoster(f);
+        if (poster) {
+          if (cloudMode()) thumb_path = await storeUploadMedia(poster, rid + '_t');
+          else await putMedia(rid + '_t', poster);
+        }
       }
+      if (cloudMode()) storage_path = await storeUploadMedia(fullBlob, rid);
+      else await putMedia(rid, fullBlob);
     } catch (err) {
       console.error(err);
       toast(`Could not store "${f.name}": ${err.message}`, 'error');
       continue;
     }
-    const r = { id: rid, type, source: 'upload', name: f.name, size: f.size, mime: f.type, ...(storage_path ? { storage_path } : {}) };
+    const r = { id: rid, type, source: 'upload', name: displayName, size: fullBlob.size, mime: fullBlob.type || f.type, ...(storage_path ? { storage_path } : {}), ...(thumb_path ? { thumb_path } : {}) };
     p.results.push(r);
     if (cloudMode()) {
       try { await storeInsertResult(p.id, r, p.results.length - 1); }
@@ -961,7 +1007,17 @@ async function doImport() {
         if (r.dataUrl) {
           try {
             const blob = await (await fetch(r.dataUrl)).blob();
-            await putMedia(r.id, blob);
+            if (r.type === 'image') {
+              const res = await compressImageUpload(blob);
+              await putMedia(r.id, res.full);
+              if (res.thumb) await putMedia(r.id + '_t', res.thumb);
+            } else {
+              await putMedia(r.id, blob);
+              if (r.type === 'video') {
+                const poster = await makeVideoPoster(blob);
+                if (poster) await putMedia(r.id + '_t', poster);
+              }
+            }
           } catch (err) { console.warn('media restore failed', err); }
           delete r.dataUrl;
         }
@@ -1307,7 +1363,17 @@ async function importIntoCloud(list) {
       const nr = { ...r, id: uid() };
       if (nr.source === 'upload' && nr.dataUrl) {
         const blob = await (await fetch(nr.dataUrl)).blob();
-        nr.storage_path = await storeUploadMedia(blob, nr.id);
+        if (nr.type === 'image') {
+          const res = await compressImageUpload(blob);
+          nr.storage_path = await storeUploadMedia(res.full, nr.id);
+          if (res.thumb) nr.thumb_path = await storeUploadMedia(res.thumb, nr.id + '_t');
+        } else {
+          nr.storage_path = await storeUploadMedia(blob, nr.id);
+          if (nr.type === 'video') {
+            const poster = await makeVideoPoster(blob);
+            if (poster) nr.thumb_path = await storeUploadMedia(poster, nr.id + '_t');
+          }
+        }
         delete nr.dataUrl;
       }
       delete nr.dataUrl;
