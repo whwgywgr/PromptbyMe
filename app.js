@@ -44,6 +44,7 @@ const I = {
   play: '<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',
   layers: '<path d="m12 2 10 5-10 5L2 7l10-5z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/>',
   palette: '<path d="M12 22a10 10 0 1 1 10-10c0 1.66-1.34 3-3 3h-2.2a2 2 0 0 0-1.5 3.33c.35.4.55.9.5 1.42A2.4 2.4 0 0 1 13.4 22H12z"/><circle cx="7.5" cy="12.5" r="1"/><circle cx="9.5" cy="7.8" r="1"/><circle cx="14.5" cy="7.2" r="1"/><circle cx="17.8" cy="11" r="1"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M5 21c0-3.9 3.1-6 7-6s7 2.1 7 6"/>',
 };
 
@@ -442,6 +443,7 @@ function cardHTML(p, idx) {
       <div class="mt-auto pt-2.5 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-500">
         <span class="truncate">${p.owner ? '@' + esc(p.owner) + ' · ' : ''}${fmtDate(p.createdAt)}${p.model ? ' · ' + esc(p.model) : ''}</span>
         <div class="flex items-center gap-0.5 shrink-0">
+          <button class="icon-btn !w-7 !h-7" data-action="share" title="Share">${icon('share', 'w-3.5 h-3.5')}</button>
           <button class="icon-btn !w-7 !h-7" data-action="copy" title="Copy prompt">${icon('copy', 'w-3.5 h-3.5')}</button>
           ${canWrite() && isMine(p) ? `
           <button class="icon-btn !w-7 !h-7" data-action="edit" title="Edit">${icon('edit', 'w-3.5 h-3.5')}</button>
@@ -598,7 +600,9 @@ function renderDetail() {
       </div>
       <div class="flex items-center gap-1 shrink-0">
         ${editable ? `
-        <button class="icon-btn ${p.favorite ? '!text-yellow-400' : ''}" data-action="dm-fav" title="Favorite">${starSvg(p.favorite, 'w-5 h-5')}</button>
+        <button class="icon-btn ${p.favorite ? '!text-yellow-400' : ''}" data-action="dm-fav" title="Favorite">${starSvg(p.favorite, 'w-5 h-5')}</button>` : ''}
+        <button class="icon-btn" data-action="dm-share" title="Share prompt">${icon('share', 'w-5 h-5')}</button>
+        ${editable ? `
         <button class="icon-btn" data-action="dm-edit" title="Edit prompt">${icon('edit', 'w-5 h-5')}</button>
         <button class="icon-btn hover:!text-red-400" data-action="dm-del" title="Delete prompt">${icon('trash', 'w-5 h-5')}</button>` : ''}
         <button class="icon-btn" data-close title="Close"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
@@ -1108,6 +1112,126 @@ async function doImport() {
   btn.textContent = old;
 }
 
+/* ============================ Sharing ============================== */
+
+function shareText(p) {
+  const body = p.prompt.length > 280 ? p.prompt.slice(0, 277) + '…' : p.prompt;
+  return `${p.title}\n\n${body}${p.model ? '\n\nModel: ' + p.model : ''}\n\n— PromptbyMe`;
+}
+
+// gambar untuk share: thumb (ringan) -> full -> url; null jika tiada
+async function getShareImageBlob(p) {
+  const r = p.results.find((x) => x.type === 'image')
+    || p.results.find((x) => x.thumb_path)
+    || null;
+  if (!r) return null;
+  if (authConfigured()) {
+    const path = r.thumb_path || r.storage_path;
+    if (path) {
+      try {
+        const resp = await fetch(storePublicUrl(path));
+        if (!resp.ok) return null;
+        return await resp.blob();
+      } catch { return null; }
+    }
+    if (r.source === 'url' && r.url) {
+      try {
+        const resp = await fetch(r.url);
+        return resp.ok ? await resp.blob() : null;
+      } catch { return null; }
+    }
+    return null;
+  }
+  return r.source === 'upload' ? await getMedia(r.id) : null;
+}
+
+async function nativeShare(p) {
+  const text = shareText(p);
+  const result = { status: 'copied' };
+  if (navigator.share) {
+    try {
+      let files = null;
+      try {
+        const blob = await getShareImageBlob(p);
+        if (blob) {
+          const file = new File([blob], 'promptbyme.png', { type: blob.type || 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) files = [file];
+        }
+      } catch {}
+      if (files) {
+        await navigator.share({ files, title: p.title, text });
+        result.status = 'shared-image';
+      } else {
+        await navigator.share({ title: p.title, text });
+        result.status = 'shared';
+      }
+      return result;
+    } catch (err) {
+      if (err && err.name === 'AbortError') { result.status = 'aborted'; return result; }
+      // jatuh ke copy di bawah
+    }
+  }
+  await copyText(text);
+  return result;
+}
+
+function openShareModal(p) {
+  state.shareId = p.id;
+  $('#share-title').textContent = p.title;
+  const native = $('#share-native');
+  native.classList.toggle('hidden', !navigator.share);
+  openModal($('#modal-share'));
+}
+
+function socialShareUrl(kind, text) {
+  const t = encodeURIComponent(text);
+  if (kind === 'x') return 'https://twitter.com/intent/tweet?text=' + t;
+  if (kind === 'whatsapp') return 'https://wa.me/?text=' + t;
+  if (kind === 'telegram') return 'https://t.me/share/url?url=' + encodeURIComponent(' ') + '&text=' + t;
+  return null;
+}
+
+function doSocialShare(kind) {
+  const p = state.prompts.find((x) => x.id === state.shareId);
+  if (!p) return;
+  const url = socialShareUrl(kind, shareText(p));
+  if (url) window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+async function doShareAction(kind) {
+  const p = state.prompts.find((x) => x.id === state.shareId);
+  if (!p) return;
+  if (kind === 'native') {
+    const res = await nativeShare(p);
+    if (res.status === 'shared' || res.status === 'shared-image') {
+      closeModal($('#modal-share'));
+      toast('Shared!', 'success');
+    } else if (res.status === 'copied') {
+      closeModal($('#modal-share'));
+      toast('Sharing is not supported here — prompt text copied instead', 'info');
+    }
+    return;
+  }
+  if (kind === 'copy') {
+    const ok = await copyText(shareText(p));
+    toast(ok ? 'Prompt text copied' : 'Copy failed', ok ? 'success' : 'error');
+    return;
+  }
+  if (kind === 'image') {
+    const blob = await getShareImageBlob(p);
+    if (!blob) { toast('No image to download for this prompt', 'error'); return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (p.results.find((x) => x.type === 'image')?.name || 'promptbyme-image').replace(/\.[^.]+$/, '') + '.png';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('Image downloaded', 'success');
+    return;
+  }
+  doSocialShare(kind);
+}
+
 /* ============================ Lightbox ============================= */
 
 function showLightbox(img) {
@@ -1135,6 +1259,12 @@ function wireEvents() {
   $('#im-go').onclick = doImport;
   $('#btn-account').onclick = onAccountClick;
   $('#guest-signin').onclick = () => openAuthModal('in');
+  $('#share-native').onclick = () => doShareAction('native');
+  $('#share-copy').onclick = () => doShareAction('copy');
+  $('#share-image').onclick = () => doShareAction('image');
+  $('#share-x').onclick = () => doShareAction('x');
+  $('#share-whatsapp').onclick = () => doShareAction('whatsapp');
+  $('#share-telegram').onclick = () => doShareAction('telegram');
   $('#btn-theme').onclick = (e) => {
     e.stopPropagation();
     $('#theme-menu').classList.toggle('hidden');
@@ -1206,6 +1336,7 @@ function wireEvents() {
     const p = state.prompts.find((x) => x.id === card.dataset.id);
     if (!p) return;
     const action = btn.dataset.action;
+    if (action === 'share') { openShareModal(p); return; }
     if (['fav', 'edit', 'del'].includes(action) && !canWrite()) { toast('Sign in to make changes', 'error'); return; }
     if (['fav', 'edit', 'del'].includes(action) && !isMine(p)) { toast('You can only manage your own prompts', 'error'); return; }
     if (action === 'open') {
@@ -1244,6 +1375,7 @@ function wireEvents() {
     if (writeActions.includes(t.dataset.action) && !canWrite()) { toast('Sign in to make changes', 'error'); return; }
     if (writeActions.includes(t.dataset.action) && !isMine(p)) { toast('You can only manage your own prompts', 'error'); return; }
     switch (t.dataset.action) {
+      case 'dm-share': openShareModal(p); break;
       case 'dm-fav':
         p.favorite = !p.favorite;
         if (cloudMode()) storeSync(storeUpdatePrompt(p.id, { favorite: p.favorite }));
