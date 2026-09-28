@@ -17,9 +17,20 @@ A local-first prompt library — save useful prompts together with their results
 
 | Data | Where |
 |---|---|
-| Prompt metadata | `localStorage` |
-| Uploaded images & videos | IndexedDB |
+| Prompt metadata | `localStorage` (local mode) or Supabase Postgres (cloud mode) |
+| Uploaded images & videos | IndexedDB (local mode) or Supabase Storage (cloud mode) |
 | Theme preference | `localStorage` |
+
+## Cloud sync (optional MVP)
+
+The app runs fully offline by default. To enable cloud sync (sign-in + cross-device library):
+
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Run [`supabase-setup.sql`](supabase-setup.sql) in Dashboard → SQL Editor (tables + RLS + storage bucket).
+3. Dashboard → Settings → API: copy the **Project URL** and **anon public key** into [`config.js`](config.js).
+4. Authentication → URL Configuration: add your site URL (e.g. `https://whwgywgr.github.io/prompt-manager/`) and `http://localhost:8931/` to the redirect allowlist.
+
+A **Sign in** button appears in the header. First sign-in offers to migrate the prompts stored on that device; after that everything syncs to your private cloud library (magic-link email sign-in, row-level security scoped to your user).
 
 ## Run
 

@@ -43,6 +43,7 @@ const I = {
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
   layers: '<path d="m12 2 10 5-10 5L2 7l10-5z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/>',
   palette: '<path d="M12 22a10 10 0 1 1 10-10c0 1.66-1.34 3-3 3h-2.2a2 2 0 0 0-1.5 3.33c.35.4.55.9.5 1.42A2.4 2.4 0 0 1 13.4 22H12z"/><circle cx="7.5" cy="12.5" r="1"/><circle cx="9.5" cy="7.8" r="1"/><circle cx="14.5" cy="7.2" r="1"/><circle cx="17.8" cy="11" r="1"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M5 21c0-3.9 3.1-6 7-6s7 2.1 7 6"/>',
 };
 
 function icon(name, cls = 'w-4 h-4') {
@@ -108,6 +109,15 @@ function clearMediaCache() {
 
 async function mediaURL(id) {
   if (mediaUrlCache.has(id)) return mediaUrlCache.get(id);
+  if (cloudMode()) {
+    const r = findResultById(id);
+    if (r && r.storage_path) {
+      const url = storePublicUrl(r.storage_path);
+      if (url) mediaUrlCache.set(id, url);
+      return url;
+    }
+    return null;
+  }
   const blob = await getMedia(id);
   if (!blob) return null;
   const url = URL.createObjectURL(blob);
@@ -145,13 +155,27 @@ function sanitizePrompt(raw) {
         ...(r.url ? { url: String(r.url) } : {}),
         ...(typeof r.html === 'string' ? { html: r.html } : {}),
         ...(typeof r.dataUrl === 'string' ? { dataUrl: r.dataUrl } : {}),
+        ...(typeof r.storage_path === 'string' ? { storage_path: r.storage_path } : {}),
       });
     }
   }
   return out;
 }
 
-function loadPrompts() {
+function loadPrompts(user) {
+  if (user) {
+    return storeLoadAll()
+      .then((data) => { state.prompts = data; })
+      .catch((err) => {
+        console.error(err);
+        toast('Cloud load failed: ' + err.message + ' — showing local cache', 'error');
+        loadLocalPrompts();
+      });
+  }
+  return Promise.resolve(loadLocalPrompts());
+}
+
+function loadLocalPrompts() {
   try {
     const raw = localStorage.getItem(LS_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
@@ -159,6 +183,7 @@ function loadPrompts() {
   } catch {
     state.prompts = [];
   }
+  return Promise.resolve();
 }
 
 function savePrompts() {
@@ -574,13 +599,17 @@ function savePromptForm() {
 
   if (state.editingId) {
     const p = state.prompts.find((x) => x.id === state.editingId);
-    if (p) Object.assign(p, data);
+    if (p) {
+      Object.assign(p, data);
+      if (cloudMode()) storeSync(storeUpdatePrompt(p.id, data));
+    }
     closeModal($('#modal-prompt'));
     if (state.detailId && $('#modal-detail') && !$('#modal-detail').classList.contains('hidden')) renderDetail();
     toast('Prompt updated', 'success');
   } else {
     const p = { id: uid(), ...data, results: [], favorite: false, createdAt: Date.now() };
     state.prompts.unshift(p);
+    if (cloudMode()) storeSync(storeCreatePrompt(p));
     closeModal($('#modal-prompt'));
     savePrompts();
     renderGrid();
@@ -600,13 +629,14 @@ async function deletePromptFlow(id) {
   const ok = await confirmDialog('Delete prompt?', `"${p.title}" and its ${p.results.length} result${p.results.length === 1 ? '' : 's'} will be removed permanently.`, 'Delete');
   if (!ok) return;
   for (const r of p.results) {
-    if (r.source === 'upload') {
+    if (!cloudMode() && r.source === 'upload') {
       await deleteMedia(r.id);
       const u = mediaUrlCache.get(r.id);
       if (u) { URL.revokeObjectURL(u); mediaUrlCache.delete(r.id); }
     }
   }
   state.prompts = state.prompts.filter((x) => x.id !== id);
+  if (cloudMode()) storeSync(storeDeletePrompt(p));
   savePrompts();
   if (state.detailId === id) { state.detailId = null; closeModal($('#modal-detail')); }
   renderGrid();
@@ -701,14 +731,24 @@ async function addUploadResults(files) {
     const type = f.type.startsWith('image/') ? 'image' : f.type.startsWith('video/') ? 'video' : null;
     if (!type || type !== state.resultType) { skipped++; continue; }
     const rid = uid();
+    let storage_path = null;
     try {
-      await putMedia(rid, f);
+      if (cloudMode()) {
+        storage_path = await storeUploadMedia(f, rid);
+      } else {
+        await putMedia(rid, f);
+      }
     } catch (err) {
       console.error(err);
       toast(`Could not store "${f.name}": ${err.message}`, 'error');
       continue;
     }
-    p.results.push({ id: rid, type, source: 'upload', name: f.name, size: f.size, mime: f.type });
+    const r = { id: rid, type, source: 'upload', name: f.name, size: f.size, mime: f.type, ...(storage_path ? { storage_path } : {}) };
+    p.results.push(r);
+    if (cloudMode()) {
+      try { await storeInsertResult(p.id, r, p.results.length - 1); }
+      catch (err) { console.error(err); toast('Cloud sync failed: ' + err.message, 'error'); }
+    }
     added++;
   }
   if (added) {
@@ -730,6 +770,7 @@ function addUrlResult(url) {
   const type = state.resultType;
   const r = { id: uid(), type, source: 'url', url: u.href, name: type === 'webview' ? hostOf(u.href) : '', size: 0, mime: '' };
   p.results.push(r);
+  if (cloudMode()) storeSync(storeInsertResult(p.id, r, p.results.length - 1));
   p.updatedAt = Date.now();
   savePrompts(); renderGrid(); renderDetail();
   closeModal($('#modal-result'));
@@ -741,6 +782,7 @@ function addHtmlResult(name, html) {
   if (!p) return;
   if (!html || !html.trim()) { toast('Paste some HTML code first', 'error'); return; }
   p.results.push({ id: uid(), type: 'webview', source: 'html', html, name: (name || '').trim() || 'HTML preview', size: 0, mime: '' });
+  if (cloudMode()) storeSync(storeInsertResult(p.id, p.results[p.results.length - 1], p.results.length - 1));
   p.updatedAt = Date.now();
   savePrompts(); renderGrid(); renderDetail();
   closeModal($('#modal-result'));
@@ -753,9 +795,13 @@ async function deleteResultFlow(p, rid) {
   const ok = await confirmDialog('Remove result?', `"${truncate(r.name || r.type, 40)}" will be removed from this prompt.`, 'Remove');
   if (!ok) return;
   if (r.source === 'upload') {
-    await deleteMedia(r.id);
     const u = mediaUrlCache.get(r.id);
     if (u) { URL.revokeObjectURL(u); mediaUrlCache.delete(r.id); }
+  }
+  if (cloudMode()) {
+    storeSync(storeDeleteResult(r));
+  } else if (r.source === 'upload') {
+    await deleteMedia(r.id);
   }
   p.results = p.results.filter((x) => x.id !== rid);
   p.updatedAt = Date.now();
@@ -771,6 +817,18 @@ async function downloadResult(rid) {
   const url = await mediaURL(rid);
   if (!url) { toast('Media file not found in storage', 'error'); return; }
   const a = document.createElement('a');
+  if (cloudMode()) {
+    try {
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      const objUrl = URL.createObjectURL(blob);
+      a.href = objUrl;
+      a.download = r.name || 'media';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(objUrl), 4000);
+      return;
+    } catch { /* fall through to direct link */ }
+  }
   a.href = url;
   a.download = r.name || 'media';
   a.click();
@@ -800,7 +858,12 @@ async function doExport() {
       const copy = JSON.parse(JSON.stringify(p));
       for (const r of copy.results) {
         if (r.source === 'upload' && includeMedia) {
-          const blob = await getMedia(r.id);
+          let blob = null;
+          if (cloudMode() && r.storage_path) {
+            try { blob = await (await fetch(storePublicUrl(r.storage_path))).blob(); } catch (e) { console.warn(e); }
+          } else {
+            blob = await getMedia(r.id);
+          }
           if (blob) r.dataUrl = await blobToDataURL(blob);
         }
       }
@@ -866,13 +929,27 @@ async function doImport() {
   btn.textContent = 'Importing…';
   try {
     if (mode === 'replace') {
-      for (const p of state.prompts) {
-        for (const r of p.results) {
-          if (r.source === 'upload') await deleteMedia(r.id);
+      if (cloudMode()) {
+        await storeDeleteAllCloud();
+      } else {
+        for (const p of state.prompts) {
+          for (const r of p.results) {
+            if (r.source === 'upload') await deleteMedia(r.id);
+          }
         }
       }
       state.prompts = [];
       clearMediaCache();
+    }
+    if (cloudMode()) {
+      for (const raw of importPayload.prompts) {
+        await importIntoCloud([raw]);
+        n++;
+      }
+      renderGrid();
+      closeModal($('#modal-import'));
+      toast(`Imported ${n} prompt${n === 1 ? '' : 's'} to your cloud library`, 'success');
+      return;
     }
     const existing = new Set(state.prompts.map((p) => p.id));
     let n = 0;
@@ -929,6 +1006,11 @@ function wireEvents() {
   $('#btn-import').onclick = openImportModal;
   $('#ex-go').onclick = doExport;
   $('#im-go').onclick = doImport;
+  $('#btn-account').onclick = onAccountClick;
+  $('#auth-send').onclick = onAuthSend;
+  $('#auth-email').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); onAuthSend(); }
+  });
 
   // Search (debounced)
   let searchTimer;
@@ -979,6 +1061,7 @@ function wireEvents() {
       openModal($('#modal-detail'));
     } else if (action === 'fav') {
       p.favorite = !p.favorite;
+      if (cloudMode()) storeSync(storeUpdatePrompt(p.id, { favorite: p.favorite }));
       savePrompts(); renderGrid();
     } else if (action === 'copy') {
       copyText(p.prompt).then((ok) => toast(ok ? 'Prompt copied to clipboard' : 'Copy failed', ok ? 'success' : 'error'));
@@ -1007,6 +1090,7 @@ function wireEvents() {
     switch (t.dataset.action) {
       case 'dm-fav':
         p.favorite = !p.favorite;
+        if (cloudMode()) storeSync(storeUpdatePrompt(p.id, { favorite: p.favorite }));
         savePrompts(); renderGrid(); renderDetail();
         break;
       case 'dm-edit': openPromptModal(p.id); break;
@@ -1087,23 +1171,161 @@ function applyTheme(theme) {
   if (sel) sel.value = t;
 }
 
+/* ============================== Cloud ============================== */
+
+function cloudMode() { return !!currentUserId(); }
+
+// optimistic sync: state is already updated; report async failures as toasts
+function storeSync(promise) {
+  if (promise && promise.catch) {
+    promise.catch((err) => {
+      console.error(err);
+      toast('Cloud sync failed: ' + (err.message || err), 'error');
+    });
+  }
+}
+
+function findResultById(id) {
+  for (const p of state.prompts) {
+    const r = (p.results || []).find((x) => x.id === id);
+    if (r) return r;
+  }
+  return null;
+}
+
+function updateAccountUI() {
+  const btn = $('#btn-account');
+  if (!btn) return;
+  if (!authConfigured()) { btn.classList.add('hidden'); btn.classList.remove('inline-flex'); return; }
+  btn.classList.remove('hidden');
+  btn.classList.add('inline-flex');
+  const user = currentUser();
+  const label = $('#account-label');
+  if (user) {
+    label.textContent = user.email || 'Account';
+    btn.title = 'Signed in — click to sign out';
+  } else {
+    label.textContent = 'Sign in';
+    btn.title = 'Sign in with an email magic link';
+  }
+}
+
+function openAuthModal() {
+  $('#auth-form-wrap').classList.remove('hidden');
+  $('#auth-sent').classList.add('hidden');
+  $('#auth-email').value = '';
+  openModal($('#modal-auth'));
+  $('#auth-email').focus();
+}
+
+function onAccountClick() {
+  const user = currentUser();
+  if (!user) { openAuthModal(); return; }
+  confirmDialog('Sign out?', `Signed in as ${user.email}. Your prompts stay saved in the cloud.`, 'Sign out')
+    .then((ok) => { if (ok) authSignOut(); });
+}
+
+async function onAuthSend() {
+  const btn = $('#auth-send');
+  const email = $('#auth-email').value.trim();
+  if (!email || !email.includes('@')) { toast('Enter a valid email address', 'error'); return; }
+  btn.disabled = true;
+  const old = btn.textContent;
+  btn.textContent = 'Sending…';
+  try {
+    await signInMagic(email);
+    $('#auth-form-wrap').classList.add('hidden');
+    $('#auth-sent').classList.remove('hidden');
+  } catch (err) {
+    toast(err.message || 'Could not send the sign-in link', 'error');
+  }
+  btn.disabled = false;
+  btn.textContent = old;
+}
+
+async function onUserChanged(user) {
+  updateAccountUI();
+  if (user) {
+    if (!$('#modal-auth').classList.contains('hidden')) closeModal($('#modal-auth'));
+    await loadPrompts(user);
+    renderGrid();
+    maybeOfferMigration(user);
+    toast('Signed in — your library is in sync', 'success');
+  } else {
+    await loadPrompts(null);
+    renderGrid();
+    toast('Signed out — using the local library on this device', 'info');
+  }
+}
+
+async function maybeOfferMigration(user) {
+  if (localStorage.getItem('pm:migrated-v1') || localStorage.getItem('pm:migration-declined')) return;
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return; }
+  if (!Array.isArray(local) || !local.length) { localStorage.setItem('pm:migrated-v1', '1'); return; }
+  const ok = await confirmDialog(
+    'Import local prompts?',
+    `${local.length} prompt(s) found on this device. Upload them to your cloud library so they sync everywhere?`,
+    'Import'
+  );
+  if (!ok) { localStorage.setItem('pm:migration-declined', '1'); return; }
+  try {
+    toast('Uploading local data to cloud…', 'info');
+    await importIntoCloud(local);
+    localStorage.setItem('pm:migrated-v1', '1');
+    state.prompts = await storeLoadAll();
+    renderGrid();
+    toast('Local data migrated to your cloud library', 'success');
+  } catch (err) {
+    console.error(err);
+    toast('Migration failed: ' + err.message, 'error');
+  }
+}
+
+// used by migration and by import (cloud mode): sanitize, fresh uuids,
+// upload embedded media to Storage, then persist prompt + results
+async function importIntoCloud(list) {
+  for (const raw of list) {
+    const p = sanitizePrompt(raw);
+    const out = { ...p, id: uid(), results: [] };
+    for (const r of p.results) {
+      const nr = { ...r, id: uid() };
+      if (nr.source === 'upload' && nr.dataUrl) {
+        const blob = await (await fetch(nr.dataUrl)).blob();
+        nr.storage_path = await storeUploadMedia(blob, nr.id);
+        delete nr.dataUrl;
+      }
+      delete nr.dataUrl;
+      out.results.push(nr);
+    }
+    out.updatedAt = Date.now();
+    await storeCreatePrompt(out);
+    state.prompts.unshift(sanitizePrompt(out));
+  }
+}
+
 /* =============================== Init ============================== */
 
-function init() {
+async function init() {
   $('#icon-plus').innerHTML = icon('plus');
   $('#icon-plus-2').innerHTML = icon('plus');
   $('#icon-import').innerHTML = icon('upload');
   $('#icon-export').innerHTML = icon('download');
   $('#icon-export-2').innerHTML = icon('download', 'w-5 h-5 text-yellow-400');
   $('#icon-import-2').innerHTML = icon('upload', 'w-5 h-5 text-yellow-400');
+  $('#icon-account').innerHTML = icon('user');
   $('#search-icon').innerHTML = icon('search');
 
   applyTheme((() => { try { return localStorage.getItem(THEME_KEY); } catch { return null; } })() || 'theme1');
   $('#theme-select').addEventListener('change', (e) => applyTheme(e.target.value));
 
-  loadPrompts();
+  const user = await authInit();
+  await loadPrompts(user);
   wireEvents();
   renderGrid();
+  authOnChange(onUserChanged);
+  updateAccountUI();
+  if (user) maybeOfferMigration(user);
 }
 
 init();

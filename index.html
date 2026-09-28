@@ -65,6 +65,9 @@
       </div>
 
       <div class="flex items-center gap-2 shrink-0">
+        <button id="btn-account" class="hidden items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-700 transition max-w-[180px] truncate" title="Account">
+          <span id="icon-account"></span> <span id="account-label">Sign in</span>
+        </button>
         <select id="theme-select" title="Theme"
           class="bg-zinc-900 border border-zinc-800 rounded-lg text-sm px-2.5 py-2 text-zinc-300 focus:outline-none focus:border-yellow-400 cursor-pointer">
           <option value="theme1">Theme 1 · Flat Yellow</option>
@@ -264,6 +267,28 @@
     </div>
   </div>
 
+  <!-- ===== Auth modal (magic link) ===== -->
+  <div id="modal-auth" class="modal hidden fixed inset-0 z-[65]">
+    <div class="modal-backdrop absolute inset-0 bg-black/70 backdrop-blur-sm" data-close></div>
+    <div class="modal-panel relative mx-auto mt-[20vh] mb-8 w-[min(420px,calc(100%-2rem))] bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl">
+      <div class="px-6 py-5">
+        <h2 id="auth-title" class="text-base font-semibold text-white">Sign in</h2>
+        <p id="auth-desc" class="text-sm text-zinc-400 mt-2">Enter your email and we'll send you a magic sign-in link. No password needed.</p>
+        <div id="auth-form-wrap" class="mt-4 space-y-3">
+          <input id="auth-email" type="email" placeholder="you@example.com" class="field-input" />
+          <button id="auth-send" class="btn-primary w-full justify-center">Send magic link</button>
+        </div>
+        <div id="auth-sent" class="hidden mt-4 text-sm rounded-lg border border-zinc-800 bg-black px-3 py-3 text-zinc-300">
+          <span class="font-semibold text-indigo-300">Check your email.</span>
+          Click the sign-in link we sent you — this page will log you in automatically when you come back.
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-zinc-800 flex justify-end gap-2">
+        <button id="auth-close" class="btn-secondary" data-close>Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== Confirm modal ===== -->
   <div id="modal-confirm" class="modal hidden fixed inset-0 z-[70]">
     <div class="modal-backdrop absolute inset-0 bg-black/70 " data-close></div>
@@ -287,6 +312,10 @@
   <!-- ===== Toasts ===== -->
   <div id="toasts" class="fixed bottom-5 right-5 z-[90] flex flex-col gap-2 items-end"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="store.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
