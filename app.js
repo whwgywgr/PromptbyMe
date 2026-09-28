@@ -162,6 +162,7 @@ function sanitizePrompt(raw) {
     createdAt: Number(p.createdAt) || Date.now(),
     updatedAt: Number(p.updatedAt) || Number(p.createdAt) || Date.now(),
     ...(typeof p.owner === 'string' && p.owner ? { owner: p.owner } : {}),
+    ...(typeof p.user_id === 'string' && p.user_id ? { user_id: p.user_id } : {}),
     results: [],
   };
   if (Array.isArray(p.results)) {
@@ -429,7 +430,7 @@ function cardHTML(p, idx) {
     <div class="relative h-40 bg-black/70 overflow-hidden img-checker" data-action="open">
       ${previewHTML}
       <div class="absolute top-2 left-2 flex gap-1">${badges}</div>
-      ${canWrite() ? `<button class="absolute top-2 right-2 w-7 h-7 rounded-md bg-black/70 flex items-center justify-center transition ${p.favorite ? 'text-yellow-400' : 'text-zinc-500 opacity-0 group-hover:opacity-100'} hover:text-yellow-300"
+      ${canWrite() && isMine(p) ? `<button class="absolute top-2 right-2 w-7 h-7 rounded-md bg-black/70 flex items-center justify-center transition ${p.favorite ? 'text-yellow-400' : 'text-zinc-500 opacity-0 group-hover:opacity-100'} hover:text-yellow-300"
         data-action="fav" title="Favorite">${starSvg(p.favorite, 'w-4 h-4')}</button>` : ''}
       ${p.results.length ? `<span class="absolute bottom-2 right-2 text-[11px] font-semibold px-1.5 py-0.5 rounded bg-yellow-400 text-black">${p.results.length} result${p.results.length === 1 ? '' : 's'}</span>` : ''}
     </div>
@@ -441,7 +442,7 @@ function cardHTML(p, idx) {
         <span class="truncate">${p.owner ? '@' + esc(p.owner) + ' · ' : ''}${fmtDate(p.createdAt)}${p.model ? ' · ' + esc(p.model) : ''}</span>
         <div class="flex items-center gap-0.5 shrink-0">
           <button class="icon-btn !w-7 !h-7" data-action="copy" title="Copy prompt">${icon('copy', 'w-3.5 h-3.5')}</button>
-          ${canWrite() ? `
+          ${canWrite() && isMine(p) ? `
           <button class="icon-btn !w-7 !h-7" data-action="edit" title="Edit">${icon('edit', 'w-3.5 h-3.5')}</button>
           <button class="icon-btn !w-7 !h-7 hover:!text-red-400" data-action="del" title="Delete">${icon('trash', 'w-3.5 h-3.5')}</button>` : ''}
         </div>
@@ -461,11 +462,48 @@ function renderTagBar() {
     .join('');
 }
 
+function sectionHTML(title, prompts, startIndex, opts = {}) {
+  const countBadge = `<span class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-yellow-400 text-black">${prompts.length}</span>`;
+  const emptyHint = opts.emptyHint
+    ? `<p class="text-sm text-zinc-500 -mt-1">${esc(opts.emptyHint)}</p>`
+    : '';
+  return `
+  <section class="mb-10">
+    <div class="flex items-center gap-2 mb-4">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">${esc(title)}</h2>
+      ${countBadge}
+    </div>
+    ${emptyHint}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      ${prompts.map((p, i) => cardHTML(p, startIndex + i)).join('')}
+    </div>
+  </section>`;
+}
+
 function renderGrid() {
   const list = visiblePrompts();
-  const grid = $('#grid');
-  grid.innerHTML = list.map((p, i) => cardHTML(p, i)).join('');
-  hydrateMedia(grid);
+  const sectionsEl = $('#sections');
+  let html = '';
+
+  if (list.length === 0) {
+    sectionsEl.innerHTML = '';
+  } else if (authConfigured()) {
+    const mine = list.filter((p) => isMine(p));
+    const others = list.filter((p) => !isMine(p));
+    const guest = isGuest();
+    if (guest) {
+      html += sectionHTML('Public prompts', list, 0);
+    } else {
+      html += sectionHTML('My prompts', mine, 0, {
+        emptyHint: 'You haven\u2019t added any prompts yet — click New Prompt above.',
+      });
+      if (others.length) html += sectionHTML('Community', others, mine.length);
+    }
+  } else {
+    html += sectionHTML('My prompts', list, 0);
+  }
+  sectionsEl.innerHTML = html;
+  hydrateMedia(sectionsEl);
 
   const empty = $('#empty-state');
   if (list.length === 0) {
@@ -495,7 +533,7 @@ function renderGrid() {
 
 /* ========================== Detail modal =========================== */
 
-function resultCardHTML(r) {
+function resultCardHTML(r, editable = true) {
   let media = '';
   if (r.type === 'image') {
     media = r.source === 'url'
@@ -530,7 +568,7 @@ function resultCardHTML(r) {
       <div class="flex items-center gap-0.5 shrink-0">
         ${r.source === 'url' ? `<a class="icon-btn" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer" title="Open in new tab">${icon('external')}</a>` : ''}
         ${r.source === 'upload' ? `<button class="icon-btn" data-action="dl-result" data-rid="${r.id}" title="Download">${icon('download')}</button>` : ''}
-        ${canWrite() ? `<button class="icon-btn hover:!text-red-400" data-action="del-result" data-rid="${r.id}" title="Remove">${icon('trash')}</button>` : ''}
+        ${editable ? `<button class="icon-btn hover:!text-red-400" data-action="del-result" data-rid="${r.id}" title="Remove">${icon('trash')}</button>` : ''}
       </div>
     </div>
   </div>`;
@@ -539,6 +577,7 @@ function resultCardHTML(r) {
 function renderDetail() {
   const p = state.prompts.find((x) => x.id === state.detailId);
   if (!p) { closeModal($('#modal-detail')); return; }
+  const editable = canWrite() && isMine(p);
 
   const tagsHTML = p.tags.length
     ? `<div class="flex flex-wrap gap-1.5">${p.tags.map((t) => `<span class="tag-chip">${esc(t)}</span>`).join('')}</div>`
@@ -557,7 +596,7 @@ function renderDetail() {
         </div>
       </div>
       <div class="flex items-center gap-1 shrink-0">
-        ${canWrite() ? `
+        ${editable ? `
         <button class="icon-btn ${p.favorite ? '!text-yellow-400' : ''}" data-action="dm-fav" title="Favorite">${starSvg(p.favorite, 'w-5 h-5')}</button>
         <button class="icon-btn" data-action="dm-edit" title="Edit prompt">${icon('edit', 'w-5 h-5')}</button>
         <button class="icon-btn hover:!text-red-400" data-action="dm-del" title="Delete prompt">${icon('trash', 'w-5 h-5')}</button>` : ''}
@@ -585,7 +624,7 @@ function renderDetail() {
       <div>
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Results (${p.results.length})</span>
-          ${canWrite() ? `
+          ${editable ? `
           <div class="flex gap-2">
             <button class="btn-secondary !py-1.5 !px-2.5 !text-xs" data-action="add-result" data-type="image">${icon('image', 'w-3.5 h-3.5')} Image</button>
             <button class="btn-secondary !py-1.5 !px-2.5 !text-xs" data-action="add-result" data-type="video">${icon('video', 'w-3.5 h-3.5')} Video</button>
@@ -625,6 +664,7 @@ function hydrateMedia(root) {
 
 function openPromptModal(id = null) {
   if (!canWrite()) { toast('Sign in to add or edit prompts', 'error'); return; }
+  if (id && !isMine(state.prompts.find((x) => x.id === id) || {})) { toast('You can only edit your own prompts', 'error'); return; }
   state.editingId = id;
   const p = id ? state.prompts.find((x) => x.id === id) : null;
   $('#pf-heading').textContent = p ? 'Edit Prompt' : 'New Prompt';
@@ -681,6 +721,7 @@ async function deletePromptFlow(id) {
   if (!canWrite()) { toast('Sign in to delete prompts', 'error'); return; }
   const p = state.prompts.find((x) => x.id === id);
   if (!p) return;
+  if (!isMine(p)) { toast('You can only delete your own prompts', 'error'); return; }
   const ok = await confirmDialog('Delete prompt?', `"${p.title}" and its ${p.results.length} result${p.results.length === 1 ? '' : 's'} will be removed permanently.`, 'Delete');
   if (!ok) return;
   for (const r of p.results) {
@@ -782,6 +823,7 @@ async function addUploadResults(files) {
   if (!canWrite()) { toast('Sign in to add results', 'error'); return; }
   const p = state.prompts.find((x) => x.id === state.detailId);
   if (!p) return;
+  if (!isMine(p)) { toast('You can only add results to your own prompts', 'error'); return; }
   let added = 0, skipped = 0;
   for (const f of files) {
     const type = f.type.startsWith('image/') ? 'image' : f.type.startsWith('video/') ? 'video' : null;
@@ -833,6 +875,7 @@ function addUrlResult(url) {
   if (!canWrite()) { toast('Sign in to add results', 'error'); return; }
   const p = state.prompts.find((x) => x.id === state.detailId);
   if (!p) return;
+  if (!isMine(p)) { toast('You can only add results to your own prompts', 'error'); return; }
   if (!url) { toast('Paste a URL first', 'error'); return; }
   let u;
   try { u = new URL(url); } catch { toast('That does not look like a valid URL', 'error'); return; }
@@ -851,6 +894,7 @@ function addHtmlResult(name, html) {
   if (!canWrite()) { toast('Sign in to add results', 'error'); return; }
   const p = state.prompts.find((x) => x.id === state.detailId);
   if (!p) return;
+  if (!isMine(p)) { toast('You can only add results to your own prompts', 'error'); return; }
   if (!html || !html.trim()) { toast('Paste some HTML code first', 'error'); return; }
   p.results.push({ id: uid(), type: 'webview', source: 'html', html, name: (name || '').trim() || 'HTML preview', size: 0, mime: '' });
   if (cloudMode()) storeSync(storeInsertResult(p.id, p.results[p.results.length - 1], p.results.length - 1));
@@ -1132,7 +1176,7 @@ function wireEvents() {
   };
 
   // Grid card actions (event delegation)
-  $('#grid').addEventListener('click', (e) => {
+  $('#sections').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
     const card = e.target.closest('[data-id]');
     if (!btn || !card) return;
@@ -1140,6 +1184,7 @@ function wireEvents() {
     if (!p) return;
     const action = btn.dataset.action;
     if (['fav', 'edit', 'del'].includes(action) && !canWrite()) { toast('Sign in to make changes', 'error'); return; }
+    if (['fav', 'edit', 'del'].includes(action) && !isMine(p)) { toast('You can only manage your own prompts', 'error'); return; }
     if (action === 'open') {
       state.detailId = p.id;
       renderDetail();
@@ -1174,6 +1219,7 @@ function wireEvents() {
     if (!p) return;
     const writeActions = ['dm-fav', 'dm-edit', 'dm-del', 'add-result', 'del-result'];
     if (writeActions.includes(t.dataset.action) && !canWrite()) { toast('Sign in to make changes', 'error'); return; }
+    if (writeActions.includes(t.dataset.action) && !isMine(p)) { toast('You can only manage your own prompts', 'error'); return; }
     switch (t.dataset.action) {
       case 'dm-fav':
         p.favorite = !p.favorite;
@@ -1261,6 +1307,14 @@ function applyTheme(theme) {
 /* ============================== Cloud ============================== */
 
 function cloudMode() { return !!currentUserId(); }
+
+// Ownership: in local mode everything is yours; in cloud mode compare ids;
+// guests own nothing.
+function isMine(p) {
+  if (!authConfigured()) return true;
+  if (!cloudMode()) return false;
+  return !!p.user_id && p.user_id === currentUserId();
+}
 
 // Guests (signed out, cloud configured) can browse the public gallery
 // read-only. Writes require being signed in (or local no-cloud mode).

@@ -37,6 +37,7 @@ function rowToResult(r) {
 function rowToPrompt(row, results, ownerUsername) {
   return {
     id: row.id,
+    user_id: row.user_id,
     title: row.title,
     model: row.model || '',
     prompt: row.prompt || '',
