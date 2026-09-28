@@ -206,3 +206,7 @@ iframe { background: #ffffff; }
   background: #facc15;
   color: #000;
 }
+
+/* Mobile: sembunyi scrollbar untuk baris yang scroll mendatar */
+.pm-noscroll { scrollbar-width: none; }
+.pm-noscroll::-webkit-scrollbar { display: none; }

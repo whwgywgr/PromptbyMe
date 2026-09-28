@@ -64,28 +64,32 @@
           class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-sm placeholder-zinc-500 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition" />
       </div>
 
-      <div class="flex items-center gap-2 shrink-0">
-        <button id="btn-account" class="hidden items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-700 transition max-w-[180px] truncate" title="Account">
-          <span id="icon-account"></span> <span id="account-label">Sign in</span>
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <button id="btn-account" class="hidden items-center gap-1.5 text-sm font-medium px-2.5 sm:px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-700 transition max-w-[180px] sm:max-w-none truncate" title="Account">
+          <span id="icon-account"></span> <span id="account-label" class="hidden sm:inline">Sign in</span>
         </button>
-        <select id="theme-select" title="Theme"
-          class="bg-zinc-900 border border-zinc-800 rounded-lg text-sm px-2.5 py-2 text-zinc-300 focus:outline-none focus:border-yellow-400 cursor-pointer">
-          <option value="theme1">Theme 1 · Flat Yellow</option>
-          <option value="theme2">Theme 2 · Neo Brutal</option>
-          <option value="theme3">Theme 3 · Soft Light</option>
-          <option value="theme4">Theme 4 · Clean Blue</option>
-          <option value="theme5">Theme 5 · 3D Sandy</option>
-          <option value="theme6">Theme 6 · Warm Caramel</option>
-          <option value="theme7">Theme 7 · Gradient Neo</option>
-        </select>
+        <div class="relative" id="theme-dd">
+          <button id="btn-theme" class="inline-flex items-center gap-1.5 text-sm font-medium px-2.5 sm:px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-700 transition" title="Theme">
+            <span id="icon-theme"></span> <span id="theme-label" class="hidden sm:inline">Theme 1</span>
+          </button>
+          <div id="theme-menu" class="hidden absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl py-1 z-50">
+            <button data-value="theme1" class="theme-option w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition text-left"><span>Flat Yellow</span><span class="pm-check invisible text-yellow-400"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+            <button data-value="theme2" class="theme-option w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition text-left"><span>Neo Brutal</span><span class="pm-check invisible text-yellow-400"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+            <button data-value="theme3" class="theme-option w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition text-left"><span>Soft Light</span><span class="pm-check invisible text-yellow-400"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+            <button data-value="theme4" class="theme-option w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition text-left"><span>Clean Blue</span><span class="pm-check invisible text-yellow-400"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+            <button data-value="theme5" class="theme-option w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition text-left"><span>3D Sandy</span><span class="pm-check invisible text-yellow-400"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+            <button data-value="theme6" class="theme-option w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition text-left"><span>Warm Caramel</span><span class="pm-check invisible text-yellow-400"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+            <button data-value="theme7" class="theme-option w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 transition text-left"><span>Gradient Neo</span><span class="pm-check invisible text-yellow-400"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>
+          </div>
+        </div>
         <button id="btn-import" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-700 transition" title="Import backup (.json)">
           <span id="icon-import"></span> Import
         </button>
         <button id="btn-export" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-700 transition" title="Export backup (.json)">
           <span id="icon-export"></span> Export
         </button>
-        <button id="btn-new" class="inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black transition">
-          <span id="icon-plus"></span> New Prompt
+        <button id="btn-new" class="inline-flex items-center gap-1.5 text-sm font-semibold px-3 sm:px-3.5 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black transition">
+          <span id="icon-plus"></span> <span class="hidden sm:inline">New Prompt</span>
         </button>
       </div>
     </div>
@@ -94,21 +98,21 @@
   <!-- ===== Filter bar ===== -->
   <div class="max-w-7xl mx-auto px-4 pt-5">
     <div class="flex flex-wrap items-center gap-2">
-      <div id="filter-bar" class="flex flex-wrap items-center gap-1.5">
-        <button data-type="all"       class="filter-pill">All</button>
-        <button data-type="favorites" class="filter-pill">Favorites</button>
-        <button data-type="image"     class="filter-pill">Images</button>
-        <button data-type="video"     class="filter-pill">Videos</button>
-        <button data-type="webview"   class="filter-pill">Webview</button>
+      <div id="filter-bar" class="flex flex-nowrap sm:flex-wrap items-center gap-1.5 overflow-x-auto pm-noscroll min-w-0 sm:min-w-0 -mx-1 px-1 py-0.5">
+        <button data-type="all"       class="filter-pill shrink-0 whitespace-nowrap">All</button>
+        <button data-type="favorites" class="filter-pill shrink-0 whitespace-nowrap">Favorites</button>
+        <button data-type="image"     class="filter-pill shrink-0 whitespace-nowrap">Images</button>
+        <button data-type="video"     class="filter-pill shrink-0 whitespace-nowrap">Videos</button>
+        <button data-type="webview"   class="filter-pill shrink-0 whitespace-nowrap">Webview</button>
       </div>
-      <div class="hidden md:block w-px h-5 bg-zinc-800 mx-1"></div>
-      <select id="sort-select" class="bg-zinc-900 border border-zinc-800 rounded-lg text-sm px-2.5 py-2 text-zinc-300 focus:outline-none focus:border-yellow-400 cursor-pointer">
+      <span class="hidden md:block w-px h-5 bg-zinc-800 mx-1 shrink-0"></span>
+      <select id="sort-select" class="shrink-0 bg-zinc-900 border border-zinc-800 rounded-lg text-sm px-2.5 py-2 text-zinc-300 focus:outline-none focus:border-yellow-400 cursor-pointer">
         <option value="newest">Newest first</option>
         <option value="oldest">Oldest first</option>
         <option value="title">Title A → Z</option>
       </select>
-      <span id="count-label" class="ml-auto text-xs text-zinc-500"></span>
-      <span id="guest-note" class="hidden ml-2 text-xs text-zinc-500">
+      <span id="count-label" class="ml-auto text-xs text-zinc-500 shrink-0"></span>
+      <span id="guest-note" class="hidden basis-full text-xs text-zinc-500">
         Guest view — <button id="guest-signin" class="font-semibold underline underline-offset-2 hover:text-yellow-400">sign in</button> to add prompts
       </span>
     </div>

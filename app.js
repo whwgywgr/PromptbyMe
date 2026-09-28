@@ -1134,6 +1134,16 @@ function wireEvents() {
   $('#im-go').onclick = doImport;
   $('#btn-account').onclick = onAccountClick;
   $('#guest-signin').onclick = () => openAuthModal('in');
+  $('#btn-theme').onclick = (e) => {
+    e.stopPropagation();
+    $('#theme-menu').classList.toggle('hidden');
+  };
+  document.querySelectorAll('#theme-menu .theme-option').forEach((o) => {
+    o.onclick = () => applyTheme(o.dataset.value);
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#theme-dd')) $('#theme-menu').classList.add('hidden');
+  });
   $('#auth-go').onclick = onAuthSubmit;
   $('#auth-tab-in').onclick = () => setAuthMode('in');
   $('#auth-tab-up').onclick = () => setAuthMode('up');
@@ -1284,6 +1294,7 @@ function wireEvents() {
   // Escape closes the topmost layer
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    $('#theme-menu').classList.add('hidden');
     if (!$('#lightbox').classList.contains('hidden')) { hideLightbox(); return; }
     for (const id of ['modal-result', 'modal-confirm', 'modal-prompt', 'modal-export', 'modal-import', 'modal-detail']) {
       const m = document.getElementById(id);
@@ -1301,8 +1312,15 @@ function applyTheme(theme) {
   document.body.classList.remove('theme2', 'theme3', 'theme4', 'theme5', 'theme6', 'theme7');
   if (t !== 'theme1') document.body.classList.add(t);
   try { localStorage.setItem(THEME_KEY, t); } catch {}
-  const sel = $('#theme-select');
-  if (sel) sel.value = t;
+  const label = $('#theme-label');
+  if (label) label.textContent = 'Theme ' + t.slice(-1);
+  document.querySelectorAll('#theme-menu .theme-option').forEach((o) => {
+    const active = o.dataset.value === t;
+    const check = o.querySelector('.pm-check');
+    if (check) check.classList.toggle('invisible', !active);
+  });
+  const menu = $('#theme-menu');
+  if (menu) menu.classList.add('hidden');
 }
 
 /* ============================== Cloud ============================== */
@@ -1496,10 +1514,10 @@ async function init() {
   $('#icon-export-2').innerHTML = icon('download', 'w-5 h-5 text-yellow-400');
   $('#icon-import-2').innerHTML = icon('upload', 'w-5 h-5 text-yellow-400');
   $('#icon-account').innerHTML = icon('user');
+  $('#icon-theme').innerHTML = icon('palette');
   $('#search-icon').innerHTML = icon('search');
 
   applyTheme((() => { try { return localStorage.getItem(THEME_KEY); } catch { return null; } })() || 'theme1');
-  $('#theme-select').addEventListener('change', (e) => applyTheme(e.target.value));
 
   const user = await authInit();
   await loadPrompts(user);
