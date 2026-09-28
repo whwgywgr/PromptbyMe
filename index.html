@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PromptbyMe</title>
+  <meta name="description" content="Browse and share AI prompts with their results — images, videos and website previews." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="PromptbyMe" />
+  <meta property="og:title" content="PromptbyMe" />
+  <meta property="og:description" content="Browse and share AI prompts with their results — images, videos and website previews." />
+  <meta property="og:image" content="assets/logo.png" />
+  <meta name="twitter:card" content="summary" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3ClinearGradient%20id='g'%20x1='16'%20y1='40'%20x2='58'%20y2='4'%20gradientUnits='userSpaceOnUse'%3E%3Cstop%20stop-color='%232563eb'/%3E%3Cstop%20offset='1'%20stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath%20fill='%233b82f6'%20d='M20%2036%20L34%2036%20L27%2058%20L8%2064%20Z'/%3E%3Cpath%20fill='url(%23g)'%20d='M20%204%20L44%204%20Q54%204%2054%2013%20L54%2027%20Q54%2036%2044%2036%20L30%2036%20L20%2028%20Z'/%3E%3Cpath%20fill='%2393c5fd'%20d='M20%2028%20L30%2036%20L20%2036%20Z'/%3E%3Cpath%20fill='%23fff'%20d='M36%2012%20L50%2020%20L36%2028%20Z'/%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -285,6 +292,13 @@
         <h2 class="text-base font-semibold text-white">Share prompt</h2>
         <p id="share-title" class="text-sm text-zinc-400 mt-2 truncate"></p>
         <div class="mt-4 space-y-2">
+          <div>
+            <label class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Link</label>
+            <div class="flex gap-2 mt-1">
+              <input id="share-link" readonly class="field-input text-xs" onclick="this.select()" />
+              <button id="share-copylink" class="btn-secondary shrink-0">Copy</button>
+            </div>
+          </div>
           <button id="share-native" class="btn-primary w-full justify-center">Share via device…</button>
           <button id="share-copy" class="btn-secondary w-full justify-center">Copy prompt text</button>
           <button id="share-image" class="btn-secondary w-full justify-center">Download image</button>

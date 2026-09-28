@@ -579,7 +579,7 @@ function resultCardHTML(r, editable = true) {
 
 function renderDetail() {
   const p = state.prompts.find((x) => x.id === state.detailId);
-  if (!p) { closeModal($('#modal-detail')); return; }
+  if (!p) { closeDetail(); return; }
   const editable = canWrite() && isMine(p);
 
   const tagsHTML = p.tags.length
@@ -713,9 +713,7 @@ function savePromptForm() {
     closeModal($('#modal-prompt'));
     savePrompts();
     renderGrid();
-    state.detailId = p.id;
-    renderDetail();
-    openModal($('#modal-detail'));
+    openDetail(p);
     toast('Prompt saved — now add some results', 'success');
     return;
   }
@@ -740,7 +738,7 @@ async function deletePromptFlow(id) {
   state.prompts = state.prompts.filter((x) => x.id !== id);
   if (cloudMode()) storeSync(storeDeletePrompt(p));
   savePrompts();
-  if (state.detailId === id) { state.detailId = null; closeModal($('#modal-detail')); }
+  if (state.detailId === id) closeDetail();
   renderGrid();
   toast('Prompt deleted', 'success');
 }
@@ -1116,7 +1114,7 @@ async function doImport() {
 
 function shareText(p) {
   const body = p.prompt.length > 280 ? p.prompt.slice(0, 277) + '…' : p.prompt;
-  return `${p.title}\n\n${body}${p.model ? '\n\nModel: ' + p.model : ''}\n\n— PromptbyMe`;
+  return `${p.title}\n\n${body}${p.model ? '\n\nModel: ' + p.model : ''}\n\n${promptUrl(p.id)}\n\n— PromptbyMe`;
 }
 
 // gambar untuk share: thumb (ringan) -> full -> url; null jika tiada
@@ -1158,11 +1156,12 @@ async function nativeShare(p) {
           if (navigator.canShare && navigator.canShare({ files: [file] })) files = [file];
         }
       } catch {}
+      const url = promptUrl(p.id);
       if (files) {
         await navigator.share({ files, title: p.title, text });
         result.status = 'shared-image';
       } else {
-        await navigator.share({ title: p.title, text });
+        await navigator.share({ title: p.title, text, url });
         result.status = 'shared';
       }
       return result;
@@ -1178,23 +1177,26 @@ async function nativeShare(p) {
 function openShareModal(p) {
   state.shareId = p.id;
   $('#share-title').textContent = p.title;
+  const linkInput = $('#share-link');
+  linkInput.value = promptUrl(p.id);
   const native = $('#share-native');
   native.classList.toggle('hidden', !navigator.share);
   openModal($('#modal-share'));
 }
 
-function socialShareUrl(kind, text) {
+function socialShareUrl(kind, text, url) {
   const t = encodeURIComponent(text);
-  if (kind === 'x') return 'https://twitter.com/intent/tweet?text=' + t;
-  if (kind === 'whatsapp') return 'https://wa.me/?text=' + t;
-  if (kind === 'telegram') return 'https://t.me/share/url?url=' + encodeURIComponent(' ') + '&text=' + t;
+  const u = encodeURIComponent(url || ' ');
+  if (kind === 'x') return 'https://twitter.com/intent/tweet?text=' + t + '&url=' + u;
+  if (kind === 'whatsapp') return 'https://wa.me/?text=' + t + '%0A%0A' + u;
+  if (kind === 'telegram') return 'https://t.me/share/url?url=' + u + '&text=' + t;
   return null;
 }
 
 function doSocialShare(kind) {
   const p = state.prompts.find((x) => x.id === state.shareId);
   if (!p) return;
-  const url = socialShareUrl(kind, shareText(p));
+  const url = socialShareUrl(kind, shareText(p), promptUrl(p.id));
   if (url) window.open(url, '_blank', 'noopener,noreferrer');
 }
 
@@ -1215,6 +1217,11 @@ async function doShareAction(kind) {
   if (kind === 'copy') {
     const ok = await copyText(shareText(p));
     toast(ok ? 'Prompt text copied' : 'Copy failed', ok ? 'success' : 'error');
+    return;
+  }
+  if (kind === 'copylink') {
+    const ok = await copyText(promptUrl(p.id));
+    toast(ok ? 'Link copied' : 'Copy failed', ok ? 'success' : 'error');
     return;
   }
   if (kind === 'image') {
@@ -1261,6 +1268,7 @@ function wireEvents() {
   $('#guest-signin').onclick = () => openAuthModal('in');
   $('#share-native').onclick = () => doShareAction('native');
   $('#share-copy').onclick = () => doShareAction('copy');
+  $('#share-copylink').onclick = () => doShareAction('copylink');
   $('#share-image').onclick = () => doShareAction('image');
   $('#share-x').onclick = () => doShareAction('x');
   $('#share-whatsapp').onclick = () => doShareAction('whatsapp');
@@ -1340,9 +1348,7 @@ function wireEvents() {
     if (['fav', 'edit', 'del'].includes(action) && !canWrite()) { toast('Sign in to make changes', 'error'); return; }
     if (['fav', 'edit', 'del'].includes(action) && !isMine(p)) { toast('You can only manage your own prompts', 'error'); return; }
     if (action === 'open') {
-      state.detailId = p.id;
-      renderDetail();
-      openModal($('#modal-detail'));
+      openDetail(p);
     } else if (action === 'fav') {
       p.favorite = !p.favorite;
       if (cloudMode()) storeSync(storeUpdatePrompt(p.id, { favorite: p.favorite }));
@@ -1368,7 +1374,7 @@ function wireEvents() {
     if (imgEl) { showLightbox(imgEl); return; }
     const t = e.target.closest('[data-action],[data-close]');
     if (!t) return;
-    if (t.hasAttribute('data-close')) { closeModal($('#modal-detail')); return; }
+    if (t.hasAttribute('data-close')) { closeDetail(); return; }
     const p = state.prompts.find((x) => x.id === state.detailId);
     if (!p) return;
     const writeActions = ['dm-fav', 'dm-edit', 'dm-del', 'add-result', 'del-result'];
@@ -1403,6 +1409,7 @@ function wireEvents() {
     const modal = closer.closest('.modal');
     if (modal) {
       if (modal.id === 'modal-confirm') settleConfirm(false);
+      else if (modal.id === 'modal-detail') closeDetail();
       else closeModal(modal);
     }
   });
@@ -1440,9 +1447,13 @@ function wireEvents() {
     if (e.key !== 'Escape') return;
     $('#theme-menu').classList.add('hidden');
     if (!$('#lightbox').classList.contains('hidden')) { hideLightbox(); return; }
-    for (const id of ['modal-result', 'modal-confirm', 'modal-prompt', 'modal-export', 'modal-import', 'modal-detail']) {
+    for (const id of ['modal-result', 'modal-confirm', 'modal-prompt', 'modal-export', 'modal-import', 'modal-share', 'modal-auth', 'modal-detail']) {
       const m = document.getElementById(id);
-      if (!m.classList.contains('hidden')) { closeModal(m); return; }
+      if (!m.classList.contains('hidden')) {
+        if (id === 'modal-detail') closeDetail();
+        else closeModal(m);
+        return;
+      }
     }
   });
 }
@@ -1511,6 +1522,48 @@ function findResultById(id) {
   }
   return null;
 }
+
+/* ============================= Routing ============================= */
+
+function promptUrl(id) {
+  return location.href.split('#')[0] + '#/p/' + id;
+}
+
+function openDetail(p, push = true) {
+  state.detailId = p.id;
+  renderDetail();
+  openModal($('#modal-detail'));
+  if (push && !location.hash.startsWith('#/p/')) {
+    history.pushState({ pmDetail: true }, '', '#/p/' + p.id);
+  }
+}
+
+function closeDetail() {
+  state.detailId = null;
+  closeModal($('#modal-detail'));
+  if (location.hash.startsWith('#/p/')) {
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+}
+
+function openFromHash() {
+  const m = location.hash.match(/^#\/p\/([A-Za-z0-9-]+)$/);
+  if (!m) return;
+  const p = state.prompts.find((x) => x.id === m[1]);
+  if (p) openDetail(p, false);
+  else toast('Prompt not found — it may have been removed', 'error');
+}
+
+// Back/forward + pasted links while the app is open
+window.addEventListener('hashchange', () => {
+  const m = location.hash.match(/^#\/p\/([A-Za-z0-9-]+)$/);
+  if (m) {
+    if (state.detailId === m[1]) return;
+    const p = state.prompts.find((x) => x.id === m[1]);
+    if (p) { openDetail(p, false); return; }
+  }
+  if (state.detailId != null) closeDetail();
+});
 
 function updateAccountUI() {
   applyPermissions();
@@ -1667,6 +1720,7 @@ async function init() {
   await loadPrompts(user);
   wireEvents();
   renderGrid();
+  openFromHash();
   authOnChange(onUserChanged);
   updateAccountUI();
   if (user) maybeOfferMigration(user);
