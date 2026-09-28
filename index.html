@@ -34,29 +34,10 @@
   <!-- ===== Header ===== -->
   <header class="sticky top-0 z-40 border-b border-zinc-800/80 bg-black">
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center gap-3">
-      <div class="flex items-center gap-2.5 shrink-0">
-        <svg class="w-9 h-9" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <defs>
-            <linearGradient id="pmBowlH" x1="16" y1="40" x2="58" y2="4" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#2563eb"/>
-              <stop offset="0.55" stop-color="#6d28d9"/>
-              <stop offset="1" stop-color="#a855f7"/>
-            </linearGradient>
-            <linearGradient id="pmStemH" x1="8" y1="64" x2="34" y2="36" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#1e3a8a"/>
-              <stop offset="1" stop-color="#3b82f6"/>
-            </linearGradient>
-          </defs>
-          <path fill="url(#pmStemH)" d="M20 36 L34 36 L27 58 L8 64 Z"/>
-          <path fill="url(#pmBowlH)" d="M20 4 L44 4 Q54 4 54 13 L54 27 Q54 36 44 36 L30 36 L20 28 Z"/>
-          <path fill="#60a5fa" d="M20 28 L30 36 L20 36 Z"/>
-          <path fill="#fff" d="M36 12 L50 20 L36 28 Z"/>
-        </svg>
-        <h1 class="leading-tight">
-          <span class="block text-base font-extrabold tracking-tight text-white">PROMPT</span>
-          <span class="block text-[10px] font-bold tracking-[0.28em] text-zinc-500">BY&nbsp;ME</span>
-        </h1>
+      <div class="shrink-0 inline-flex items-center bg-white rounded-lg border border-black/5 shadow-sm px-2.5 py-1.5">
+        <img src="assets/logo.png" alt="PromptbyMe" class="h-8 sm:h-9 w-auto" />
       </div>
+      <h1 class="sr-only">PromptbyMe</h1>
 
       <div class="flex-1 max-w-xl ml-auto relative">
         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" id="search-icon"></span>
@@ -124,24 +105,8 @@
     <div id="sections" class="space-y-2"></div>
 
     <div id="empty-state" class="hidden flex-col items-center justify-center text-center py-24 gap-4">
-      <div class="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-yellow-400">
-        <svg class="w-9 h-9" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <defs>
-            <linearGradient id="pmBowlE" x1="16" y1="40" x2="58" y2="4" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#2563eb"/>
-              <stop offset="0.55" stop-color="#6d28d9"/>
-              <stop offset="1" stop-color="#a855f7"/>
-            </linearGradient>
-            <linearGradient id="pmStemE" x1="8" y1="64" x2="34" y2="36" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#1e3a8a"/>
-              <stop offset="1" stop-color="#3b82f6"/>
-            </linearGradient>
-          </defs>
-          <path fill="url(#pmStemE)" d="M20 36 L34 36 L27 58 L8 64 Z"/>
-          <path fill="url(#pmBowlE)" d="M20 4 L44 4 Q54 4 54 13 L54 27 Q54 36 44 36 L30 36 L20 28 Z"/>
-          <path fill="#60a5fa" d="M20 28 L30 36 L20 36 Z"/>
-          <path fill="#fff" d="M36 12 L50 20 L36 28 Z"/>
-        </svg>
+      <div class="inline-flex items-center justify-center bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-yellow-400">
+        <img src="assets/logo.png" class="w-44 h-auto" alt="" />
       </div>
       <div>
         <h2 id="empty-title" class="text-lg font-semibold text-zinc-300">No prompts yet</h2>
