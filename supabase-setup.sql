@@ -129,15 +129,31 @@ create unique index if not exists profiles_username_lower_idx
 
 -- auto-create the profile on signup, using the username passed in
 -- signUp({ options: { data: { username } } })
+-- For OAuth users (Google), the username is derived from their display name.
 create or replace function handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  base text;
+  candidate text;
+  i int := 0;
 begin
-  insert into public.profiles (id, username)
-  values (
-    new.id,
-    coalesce(new.raw_user_meta_data ->> 'username', 'user' || left(replace(new.id::text, '-', ''), 8))
-  )
-  on conflict do nothing;
+  base := coalesce(
+    new.raw_user_meta_data ->> 'username',
+    new.raw_user_meta_data ->> 'user_name',
+    new.raw_user_meta_data ->> 'name',
+    new.raw_user_meta_data ->> 'full_name',
+    split_part(coalesce(new.email, 'user'), '@', 1)
+  );
+  base := regexp_replace(base, '[^a-zA-Z0-9_-]', '', 'g');
+  if base is null or length(base) < 3 then
+    base := 'user' || left(replace(new.id::text, '-', ''), 8);
+  end if;
+  candidate := base;
+  while exists (select 1 from public.profiles where lower(username) = lower(candidate)) loop
+    i := i + 1;
+    candidate := base || i::text;
+  end loop;
+  insert into public.profiles (id, username) values (new.id, candidate);
   return new;
 end;
 $$;
@@ -156,3 +172,9 @@ returns text language sql security definer set search_path = public as $$
   where lower(pr.username) = lower(p_username)
   limit 1;
 $$;
+
+-- 6. Google OAuth (optional) -------------------------------------------
+-- Dashboard -> Authentication -> Providers -> Google: enable + paste
+--   Client ID / Client Secret from Google Cloud Console
+--   (OAuth client -> Authorized redirect URI:
+--      https://<your-project-ref>.supabase.co/auth/v1/callback )

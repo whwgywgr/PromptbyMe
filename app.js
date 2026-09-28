@@ -1145,6 +1145,17 @@ function wireEvents() {
     if (!e.target.closest('#theme-dd')) $('#theme-menu').classList.add('hidden');
   });
   $('#auth-go').onclick = onAuthSubmit;
+  $('#auth-google').onclick = async () => {
+    const btn = $('#auth-google');
+    btn.disabled = true;
+    try {
+      await signInWithGoogle();
+      // halaman redirect ke Google; session dipulihkan bila balik
+    } catch (err) {
+      toast(err.message || 'Google sign-in failed', 'error');
+      btn.disabled = false;
+    }
+  };
   $('#auth-tab-in').onclick = () => setAuthMode('in');
   $('#auth-tab-up').onclick = () => setAuthMode('up');
   const authEnter = (e) => { if (e.key === 'Enter') { e.preventDefault(); onAuthSubmit(); } };

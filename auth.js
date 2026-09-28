@@ -35,6 +35,21 @@ function authInit() {
 function currentUser() { return pmUser; }
 function currentUserId() { return pmUser ? pmUser.id : null; }
 function currentDisplayName() {
+  if (!pmUser) return 'Account';
+  const meta = pmUser.user_metadata || {};
+  return meta.username || meta.name || (pmUser.email ? pmUser.email.split('@')[0] : 'Account');
+}
+
+// Google OAuth — redirects to Google, returns to emailRedirectTo with a session
+async function signInWithGoogle() {
+  if (!pmSupabase) throw new Error('Supabase not configured');
+  const { error } = await pmSupabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + window.location.pathname },
+  });
+  if (error) throw error;
+}
+function currentDisplayName() {
   return (pmUser && pmUser.user_metadata && pmUser.user_metadata.username)
     || (pmUser && pmUser.email && pmUser.email.split('@')[0])
     || 'Account';
