@@ -1,5 +1,5 @@
 -- =====================================================================
--- Prompt Manager — Supabase setup
+-- PromptbyMe — Supabase setup
 -- Run this ONCE in Supabase Dashboard -> SQL Editor
 -- =====================================================================
 

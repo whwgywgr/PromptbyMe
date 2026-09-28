@@ -1,4 +1,4 @@
-# Prompt Manager
+# PromptbyMe
 
 A local-first prompt library — save useful prompts together with their results: images, videos, and website design previews (webview). No auth, no server, no account. Just open it in a browser.
 

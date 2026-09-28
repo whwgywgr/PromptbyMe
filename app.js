@@ -1,7 +1,7 @@
 'use strict';
 
 /* =====================================================================
-   Prompt Manager — local-first prompt library with media results
+   PromptbyMe — local-first prompt library with media results
    - Metadata: localStorage  |  Uploaded media: IndexedDB (blobs)
    ===================================================================== */
 
@@ -946,7 +946,7 @@ async function readImportFile(file) {
   try {
     const text = await file.text();
     const json = JSON.parse(text);
-    if (!json || !Array.isArray(json.prompts)) throw new Error('Not a Prompt Manager backup file');
+    if (!json || !Array.isArray(json.prompts)) throw new Error('Not a PromptbyMe backup file');
     importPayload = json;
     const mediaN = json.prompts.reduce((n, p) => n + (Array.isArray(p.results) ? p.results.filter((r) => r && r.dataUrl).length : 0), 0);
     $('#im-summary').innerHTML =
