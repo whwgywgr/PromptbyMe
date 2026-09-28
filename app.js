@@ -1007,10 +1007,12 @@ function wireEvents() {
   $('#ex-go').onclick = doExport;
   $('#im-go').onclick = doImport;
   $('#btn-account').onclick = onAccountClick;
-  $('#auth-send').onclick = onAuthSend;
-  $('#auth-email').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); onAuthSend(); }
-  });
+  $('#auth-go').onclick = onAuthSubmit;
+  $('#auth-tab-in').onclick = () => setAuthMode('in');
+  $('#auth-tab-up').onclick = () => setAuthMode('up');
+  const authEnter = (e) => { if (e.key === 'Enter') { e.preventDefault(); onAuthSubmit(); } };
+  $('#auth-username').addEventListener('keydown', authEnter);
+  $('#auth-password').addEventListener('keydown', authEnter);
 
   // Search (debounced)
   let searchTimer;
@@ -1202,42 +1204,55 @@ function updateAccountUI() {
   const user = currentUser();
   const label = $('#account-label');
   if (user) {
-    label.textContent = user.email || 'Account';
+    label.textContent = '@' + currentDisplayName();
     btn.title = 'Signed in — click to sign out';
   } else {
     label.textContent = 'Sign in';
-    btn.title = 'Sign in with an email magic link';
+    btn.title = 'Sign in with username and password';
   }
 }
 
-function openAuthModal() {
-  $('#auth-form-wrap').classList.remove('hidden');
-  $('#auth-sent').classList.add('hidden');
-  $('#auth-email').value = '';
+function openAuthModal(mode = 'in') {
+  setAuthMode(mode);
+  $('#auth-username').value = '';
+  $('#auth-password').value = '';
   openModal($('#modal-auth'));
-  $('#auth-email').focus();
+  $('#auth-username').focus();
 }
 
 function onAccountClick() {
   const user = currentUser();
-  if (!user) { openAuthModal(); return; }
-  confirmDialog('Sign out?', `Signed in as ${user.email}. Your prompts stay saved in the cloud.`, 'Sign out')
+  if (!user) { openAuthModal('in'); return; }
+  confirmDialog('Sign out?', `Signed in as @${currentDisplayName()}. Your prompts stay saved in the cloud.`, 'Sign out')
     .then((ok) => { if (ok) authSignOut(); });
 }
 
-async function onAuthSend() {
-  const btn = $('#auth-send');
-  const email = $('#auth-email').value.trim();
-  if (!email || !email.includes('@')) { toast('Enter a valid email address', 'error'); return; }
+let authMode = 'in';
+
+function setAuthMode(mode) {
+  authMode = mode;
+  $('#auth-tab-in').classList.toggle('active', mode === 'in');
+  $('#auth-tab-up').classList.toggle('active', mode === 'up');
+  $('#auth-go').textContent = mode === 'in' ? 'Sign in' : 'Create account';
+  $('#auth-password').autocomplete = mode === 'in' ? 'current-password' : 'new-password';
+}
+
+async function onAuthSubmit() {
+  const username = $('#auth-username').value.trim();
+  const password = $('#auth-password').value;
+  if (!username || username.length < 3) { toast('Username must be at least 3 characters', 'error'); return; }
+  if (!password || password.length < 6) { toast('Password must be at least 6 characters', 'error'); return; }
+
+  const btn = $('#auth-go');
   btn.disabled = true;
   const old = btn.textContent;
-  btn.textContent = 'Sending…';
+  btn.textContent = authMode === 'in' ? 'Signing in…' : 'Creating account…';
   try {
-    await signInMagic(email);
-    $('#auth-form-wrap').classList.add('hidden');
-    $('#auth-sent').classList.remove('hidden');
+    if (authMode === 'in') await signInUser(username, password);
+    else await signUpUser(username, password);
+    // onAuthStateChange drives the rest: modal closes, cloud loads
   } catch (err) {
-    toast(err.message || 'Could not send the sign-in link', 'error');
+    toast(err.message || 'Authentication failed', 'error');
   }
   btn.disabled = false;
   btn.textContent = old;
