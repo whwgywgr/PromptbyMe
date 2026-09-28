@@ -703,6 +703,7 @@ function savePromptForm() {
     toast('Prompt updated', 'success');
   } else {
     const p = { id: uid(), ...data, results: [], favorite: false, createdAt: Date.now() };
+    if (cloudMode()) p.user_id = currentUserId();
     state.prompts.unshift(p);
     if (cloudMode()) storeSync(storeCreatePrompt(p));
     closeModal($('#modal-prompt'));
@@ -1488,7 +1489,7 @@ async function maybeOfferMigration(user) {
 async function importIntoCloud(list) {
   for (const raw of list) {
     const p = sanitizePrompt(raw);
-    const out = { ...p, id: uid(), results: [] };
+    const out = { ...p, id: uid(), user_id: currentUserId(), results: [] };
     for (const r of p.results) {
       const nr = { ...r, id: uid() };
       if (nr.source === 'upload' && nr.dataUrl) {
