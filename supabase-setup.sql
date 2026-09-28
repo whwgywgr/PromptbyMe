@@ -36,6 +36,9 @@ create table if not exists results (
 
 create index if not exists results_prompt_id_idx on results (prompt_id);
 
+-- Added for grid thumbnails (safe to re-run on existing databases)
+alter table results add column if not exists thumb_path text;
+
 -- 2. Row Level Security (each user sees only their own rows) ----------
 
 alter table prompts enable row level security;
