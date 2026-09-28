@@ -34,7 +34,7 @@ function rowToResult(r) {
   };
 }
 
-function rowToPrompt(row, results) {
+function rowToPrompt(row, results, ownerUsername) {
   return {
     id: row.id,
     title: row.title,
@@ -45,6 +45,7 @@ function rowToPrompt(row, results) {
     favorite: !!row.favorite,
     createdAt: Date.parse(row.created_at) || Date.now(),
     updatedAt: Date.parse(row.updated_at) || Date.now(),
+    ...(ownerUsername ? { owner: ownerUsername } : {}),
     results,
   };
 }
@@ -86,19 +87,22 @@ function resultToRow(r, promptId, position) {
 /* ---------- load ---------- */
 
 async function storeLoadAll() {
-  const [pr, rr] = await Promise.all([
+  const [pr, rr, pf] = await Promise.all([
     sb().from('prompts').select('*').order('updated_at', { ascending: false }),
     sb().from('results').select('*').order('position', { ascending: true }),
+    sb().from('profiles').select('id,username'),
   ]);
   if (pr.error) throw pr.error;
   if (rr.error) throw rr.error;
+  if (pf.error) throw pf.error;
 
+  const usernameById = new Map((pf.data || []).map((x) => [x.id, x.username]));
   const byPrompt = new Map();
   for (const r of rr.data || []) {
     if (!byPrompt.has(r.prompt_id)) byPrompt.set(r.prompt_id, []);
     byPrompt.get(r.prompt_id).push(rowToResult(r));
   }
-  return (pr.data || []).map((row) => rowToPrompt(row, byPrompt.get(row.id) || []));
+  return (pr.data || []).map((row) => rowToPrompt(row, byPrompt.get(row.id) || [], usernameById.get(row.user_id)));
 }
 
 /* ---------- prompts ---------- */

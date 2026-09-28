@@ -39,20 +39,41 @@ create index if not exists results_prompt_id_idx on results (prompt_id);
 -- Added for grid thumbnails (safe to re-run on existing databases)
 alter table results add column if not exists thumb_path text;
 
--- 2. Row Level Security (each user sees only their own rows) ----------
+-- 2. Row Level Security ------------------------------------------------
+-- Public READ (guest gallery); writes are owner-only.
 
 alter table prompts enable row level security;
 alter table results enable row level security;
 
 drop policy if exists "own prompts" on prompts;
-create policy "own prompts" on prompts
-  for all using (auth.uid() = user_id)
+drop policy if exists "prompts public read" on prompts;
+create policy "prompts public read" on prompts
+  for select using (true);
+drop policy if exists "own prompts insert" on prompts;
+create policy "own prompts insert" on prompts
+  for insert with check (auth.uid() = user_id);
+drop policy if exists "own prompts update" on prompts;
+create policy "own prompts update" on prompts
+  for update using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+drop policy if exists "own prompts delete" on prompts;
+create policy "own prompts delete" on prompts
+  for delete using (auth.uid() = user_id);
 
 drop policy if exists "own results" on results;
-create policy "own results" on results
-  for all using (auth.uid() = user_id)
+drop policy if exists "results public read" on results;
+create policy "results public read" on results
+  for select using (true);
+drop policy if exists "own results insert" on results;
+create policy "own results insert" on results
+  for insert with check (auth.uid() = user_id);
+drop policy if exists "own results update" on results;
+create policy "own results update" on results
+  for update using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+drop policy if exists "own results delete" on results;
+create policy "own results delete" on results
+  for delete using (auth.uid() = user_id);
 
 -- 3. Storage bucket for uploaded media --------------------------------
 

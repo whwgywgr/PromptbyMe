@@ -161,6 +161,7 @@ function sanitizePrompt(raw) {
     favorite: !!p.favorite,
     createdAt: Number(p.createdAt) || Date.now(),
     updatedAt: Number(p.updatedAt) || Number(p.createdAt) || Date.now(),
+    ...(typeof p.owner === 'string' && p.owner ? { owner: p.owner } : {}),
     results: [],
   };
   if (Array.isArray(p.results)) {
@@ -192,6 +193,16 @@ function loadPrompts(user) {
       .catch((err) => {
         console.error(err);
         toast('Cloud load failed: ' + err.message + ' — showing local cache', 'error');
+        loadLocalPrompts();
+      });
+  }
+  if (authConfigured()) {
+    // guest: browse every public prompt, read-only
+    return storeLoadAll()
+      .then((data) => { state.prompts = data; })
+      .catch((err) => {
+        console.error(err);
+        toast('Could not load the public gallery: ' + err.message, 'error');
         loadLocalPrompts();
       });
   }
@@ -418,8 +429,8 @@ function cardHTML(p, idx) {
     <div class="relative h-40 bg-black/70 overflow-hidden img-checker" data-action="open">
       ${previewHTML}
       <div class="absolute top-2 left-2 flex gap-1">${badges}</div>
-      <button class="absolute top-2 right-2 w-7 h-7 rounded-md bg-black/70 flex items-center justify-center transition ${p.favorite ? 'text-yellow-400' : 'text-zinc-500 opacity-0 group-hover:opacity-100'} hover:text-yellow-300"
-        data-action="fav" title="Favorite">${starSvg(p.favorite, 'w-4 h-4')}</button>
+      ${canWrite() ? `<button class="absolute top-2 right-2 w-7 h-7 rounded-md bg-black/70 flex items-center justify-center transition ${p.favorite ? 'text-yellow-400' : 'text-zinc-500 opacity-0 group-hover:opacity-100'} hover:text-yellow-300"
+        data-action="fav" title="Favorite">${starSvg(p.favorite, 'w-4 h-4')}</button>` : ''}
       ${p.results.length ? `<span class="absolute bottom-2 right-2 text-[11px] font-semibold px-1.5 py-0.5 rounded bg-yellow-400 text-black">${p.results.length} result${p.results.length === 1 ? '' : 's'}</span>` : ''}
     </div>
     <div class="p-4 flex-1 flex flex-col gap-2" data-action="open">
@@ -427,11 +438,12 @@ function cardHTML(p, idx) {
       <p class="text-[13px] text-zinc-400 line-clamp-3 leading-relaxed">${esc(p.prompt)}</p>
       ${tagsHTML}
       <div class="mt-auto pt-2.5 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-500">
-        <span class="truncate">${fmtDate(p.createdAt)}${p.model ? ' · ' + esc(p.model) : ''}</span>
+        <span class="truncate">${p.owner ? '@' + esc(p.owner) + ' · ' : ''}${fmtDate(p.createdAt)}${p.model ? ' · ' + esc(p.model) : ''}</span>
         <div class="flex items-center gap-0.5 shrink-0">
           <button class="icon-btn !w-7 !h-7" data-action="copy" title="Copy prompt">${icon('copy', 'w-3.5 h-3.5')}</button>
+          ${canWrite() ? `
           <button class="icon-btn !w-7 !h-7" data-action="edit" title="Edit">${icon('edit', 'w-3.5 h-3.5')}</button>
-          <button class="icon-btn !w-7 !h-7 hover:!text-red-400" data-action="del" title="Delete">${icon('trash', 'w-3.5 h-3.5')}</button>
+          <button class="icon-btn !w-7 !h-7 hover:!text-red-400" data-action="del" title="Delete">${icon('trash', 'w-3.5 h-3.5')}</button>` : ''}
         </div>
       </div>
     </div>
@@ -460,11 +472,16 @@ function renderGrid() {
     empty.classList.remove('hidden');
     empty.classList.add('flex');
     const noData = state.prompts.length === 0;
-    $('#empty-title').textContent = noData ? 'No prompts yet' : 'No prompts match your filters';
+    const guest = isGuest();
+    $('#empty-title').textContent = noData
+      ? (guest ? 'No public prompts yet' : 'No prompts yet')
+      : 'No prompts match your filters';
     $('#empty-msg').textContent = noData
-      ? 'Save your first prompt together with its results — images, videos or website previews.'
+      ? (guest
+        ? 'Nothing has been published yet. Sign in to add the first prompt — guests can browse everything read-only.'
+        : 'Save your first prompt together with its results — images, videos or website previews.')
       : 'Try a different search, tag or filter below.';
-    $('#btn-empty-new').classList.toggle('hidden', !noData);
+    $('#btn-empty-new').classList.toggle('hidden', !noData || guest);
     $('#btn-clear-filters').classList.toggle('hidden', noData);
   } else {
     empty.classList.add('hidden');
@@ -513,7 +530,7 @@ function resultCardHTML(r) {
       <div class="flex items-center gap-0.5 shrink-0">
         ${r.source === 'url' ? `<a class="icon-btn" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer" title="Open in new tab">${icon('external')}</a>` : ''}
         ${r.source === 'upload' ? `<button class="icon-btn" data-action="dl-result" data-rid="${r.id}" title="Download">${icon('download')}</button>` : ''}
-        <button class="icon-btn hover:!text-red-400" data-action="del-result" data-rid="${r.id}" title="Remove">${icon('trash')}</button>
+        ${canWrite() ? `<button class="icon-btn hover:!text-red-400" data-action="del-result" data-rid="${r.id}" title="Remove">${icon('trash')}</button>` : ''}
       </div>
     </div>
   </div>`;
@@ -533,15 +550,17 @@ function renderDetail() {
         <h2 class="text-lg font-bold text-white truncate">${esc(p.title)}</h2>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-zinc-500">
           ${p.model ? `<span class="px-1.5 py-0.5 rounded bg-yellow-400 text-black border border-yellow-400 font-semibold">${esc(p.model)}</span>` : ''}
+          ${p.owner ? `<span>@${esc(p.owner)}</span>` : ''}
           <span>Created ${fmtDate(p.createdAt)}</span>
           <span>Updated ${fmtDate(p.updatedAt)}</span>
           <span class="flex items-center gap-1">${icon('layers', 'w-3.5 h-3.5')}${p.results.length} result${p.results.length === 1 ? '' : 's'}</span>
         </div>
       </div>
       <div class="flex items-center gap-1 shrink-0">
+        ${canWrite() ? `
         <button class="icon-btn ${p.favorite ? '!text-yellow-400' : ''}" data-action="dm-fav" title="Favorite">${starSvg(p.favorite, 'w-5 h-5')}</button>
         <button class="icon-btn" data-action="dm-edit" title="Edit prompt">${icon('edit', 'w-5 h-5')}</button>
-        <button class="icon-btn hover:!text-red-400" data-action="dm-del" title="Delete prompt">${icon('trash', 'w-5 h-5')}</button>
+        <button class="icon-btn hover:!text-red-400" data-action="dm-del" title="Delete prompt">${icon('trash', 'w-5 h-5')}</button>` : ''}
         <button class="icon-btn" data-close title="Close"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
       </div>
     </div>
@@ -566,11 +585,12 @@ function renderDetail() {
       <div>
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <span class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Results (${p.results.length})</span>
+          ${canWrite() ? `
           <div class="flex gap-2">
             <button class="btn-secondary !py-1.5 !px-2.5 !text-xs" data-action="add-result" data-type="image">${icon('image', 'w-3.5 h-3.5')} Image</button>
             <button class="btn-secondary !py-1.5 !px-2.5 !text-xs" data-action="add-result" data-type="video">${icon('video', 'w-3.5 h-3.5')} Video</button>
             <button class="btn-secondary !py-1.5 !px-2.5 !text-xs" data-action="add-result" data-type="webview">${icon('globe', 'w-3.5 h-3.5')} Webview</button>
-          </div>
+          </div>` : ''}
         </div>
         ${p.results.length === 0
           ? `<div class="border border-dashed border-zinc-800 rounded-xl py-10 text-center text-sm text-zinc-500">No results yet — add an image, video or webview above.</div>`
@@ -604,6 +624,7 @@ function hydrateMedia(root) {
 /* ========================= Prompt CRUD ============================= */
 
 function openPromptModal(id = null) {
+  if (!canWrite()) { toast('Sign in to add or edit prompts', 'error'); return; }
   state.editingId = id;
   const p = id ? state.prompts.find((x) => x.id === id) : null;
   $('#pf-heading').textContent = p ? 'Edit Prompt' : 'New Prompt';
@@ -657,6 +678,7 @@ function savePromptForm() {
 }
 
 async function deletePromptFlow(id) {
+  if (!canWrite()) { toast('Sign in to delete prompts', 'error'); return; }
   const p = state.prompts.find((x) => x.id === id);
   if (!p) return;
   const ok = await confirmDialog('Delete prompt?', `"${p.title}" and its ${p.results.length} result${p.results.length === 1 ? '' : 's'} will be removed permanently.`, 'Delete');
@@ -757,6 +779,7 @@ function openResultModal(type) {
 }
 
 async function addUploadResults(files) {
+  if (!canWrite()) { toast('Sign in to add results', 'error'); return; }
   const p = state.prompts.find((x) => x.id === state.detailId);
   if (!p) return;
   let added = 0, skipped = 0;
@@ -807,6 +830,7 @@ async function addUploadResults(files) {
 }
 
 function addUrlResult(url) {
+  if (!canWrite()) { toast('Sign in to add results', 'error'); return; }
   const p = state.prompts.find((x) => x.id === state.detailId);
   if (!p) return;
   if (!url) { toast('Paste a URL first', 'error'); return; }
@@ -824,6 +848,7 @@ function addUrlResult(url) {
 }
 
 function addHtmlResult(name, html) {
+  if (!canWrite()) { toast('Sign in to add results', 'error'); return; }
   const p = state.prompts.find((x) => x.id === state.detailId);
   if (!p) return;
   if (!html || !html.trim()) { toast('Paste some HTML code first', 'error'); return; }
@@ -1063,6 +1088,7 @@ function wireEvents() {
   $('#ex-go').onclick = doExport;
   $('#im-go').onclick = doImport;
   $('#btn-account').onclick = onAccountClick;
+  $('#guest-signin').onclick = () => openAuthModal('in');
   $('#auth-go').onclick = onAuthSubmit;
   $('#auth-tab-in').onclick = () => setAuthMode('in');
   $('#auth-tab-up').onclick = () => setAuthMode('up');
@@ -1113,6 +1139,7 @@ function wireEvents() {
     const p = state.prompts.find((x) => x.id === card.dataset.id);
     if (!p) return;
     const action = btn.dataset.action;
+    if (['fav', 'edit', 'del'].includes(action) && !canWrite()) { toast('Sign in to make changes', 'error'); return; }
     if (action === 'open') {
       state.detailId = p.id;
       renderDetail();
@@ -1145,6 +1172,8 @@ function wireEvents() {
     if (t.hasAttribute('data-close')) { closeModal($('#modal-detail')); return; }
     const p = state.prompts.find((x) => x.id === state.detailId);
     if (!p) return;
+    const writeActions = ['dm-fav', 'dm-edit', 'dm-del', 'add-result', 'del-result'];
+    if (writeActions.includes(t.dataset.action) && !canWrite()) { toast('Sign in to make changes', 'error'); return; }
     switch (t.dataset.action) {
       case 'dm-fav':
         p.favorite = !p.favorite;
@@ -1233,6 +1262,21 @@ function applyTheme(theme) {
 
 function cloudMode() { return !!currentUserId(); }
 
+// Guests (signed out, cloud configured) can browse the public gallery
+// read-only. Writes require being signed in (or local no-cloud mode).
+function isGuest() { return authConfigured() && !currentUser(); }
+function canWrite() { return !isGuest(); }
+
+function applyPermissions() {
+  const guest = isGuest();
+  ['#btn-new', '#btn-import', '#btn-export'].forEach((sel) => {
+    const el = $(sel);
+    if (el) el.classList.toggle('!hidden', guest);
+  });
+  const note = $('#guest-note');
+  if (note) note.classList.toggle('hidden', !guest);
+}
+
 // optimistic sync: state is already updated; report async failures as toasts
 function storeSync(promise) {
   if (promise && promise.catch) {
@@ -1252,6 +1296,7 @@ function findResultById(id) {
 }
 
 function updateAccountUI() {
+  applyPermissions();
   const btn = $('#btn-account');
   if (!btn) return;
   if (!authConfigured()) { btn.classList.add('hidden'); btn.classList.remove('inline-flex'); return; }
@@ -1266,6 +1311,7 @@ function updateAccountUI() {
     label.textContent = 'Sign in';
     btn.title = 'Sign in with username and password';
   }
+  applyPermissions();
 }
 
 function openAuthModal(mode = 'in') {
