@@ -111,7 +111,7 @@ function clearMediaCache() {
 async function mediaThumbURL(id) {
   const key = id + '_t';
   if (mediaUrlCache.has(key)) return mediaUrlCache.get(key);
-  if (cloudMode()) {
+  if (authConfigured()) {
     const r = findResultById(id);
     if (r && r.thumb_path) {
       const url = storePublicUrl(r.thumb_path);
@@ -131,7 +131,8 @@ async function mediaThumbURL(id) {
 
 async function mediaURL(id) {
   if (mediaUrlCache.has(id)) return mediaUrlCache.get(id);
-  if (cloudMode()) {
+  // Cloud mode (signed in OR guest): public-read URLs resolve for everyone
+  if (authConfigured()) {
     const r = findResultById(id);
     if (r && r.storage_path) {
       const url = storePublicUrl(r.storage_path);
