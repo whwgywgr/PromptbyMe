@@ -1,0 +1,7 @@
+# Secrets / local config (jangan commit — lihat config.example.js)
+config.js
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
