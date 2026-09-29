@@ -1495,11 +1495,11 @@ function wireEvents() {
 
 /* ============================== Theme ============================== */
 
-const THEMES = ['theme1', 'theme2', 'theme3', 'theme4', 'theme5', 'theme6', 'theme7'];
+const THEMES = ['theme1', 'theme2', 'theme3', 'theme4', 'theme5', 'theme6', 'theme7', 'theme8'];
 
 function applyTheme(theme) {
   const t = THEMES.includes(theme) ? theme : 'theme3';
-  document.body.classList.remove('theme2', 'theme3', 'theme4', 'theme5', 'theme6', 'theme7');
+  document.body.classList.remove('theme2', 'theme3', 'theme4', 'theme5', 'theme6', 'theme7', 'theme8');
   if (t !== 'theme1') document.body.classList.add(t);
   try { localStorage.setItem(THEME_KEY, t); } catch {}
   const label = $('#theme-label');
