@@ -178,3 +178,40 @@ $$;
 --   Client ID / Client Secret from Google Cloud Console
 --   (OAuth client -> Authorized redirect URI:
 --      https://<your-project-ref>.supabase.co/auth/v1/callback )
+
+-- 7. Superadmin (boleh delete prompt sesiapa) --------------------------
+--    TUKAR senarai username di bawah ikut admin anda.
+
+create or replace function is_superadmin()
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from profiles
+    where id = auth.uid()
+      and lower(username) in ('yusuf')
+  );
+$$;
+
+drop policy if exists "own prompts delete" on prompts;
+create policy "own prompts delete" on prompts
+  for delete using (auth.uid() = user_id or is_superadmin());
+
+drop policy if exists "own results delete" on results;
+create policy "own results delete" on results
+  for delete using (auth.uid() = user_id or is_superadmin());
+
+drop policy if exists "own media" on storage.objects;
+create policy "own media" on storage.objects
+  for all using (
+    bucket_id = 'media'
+    and (
+      auth.uid()::text = (storage.foldername(name))[1]
+      or is_superadmin()
+    )
+  )
+  with check (
+    bucket_id = 'media'
+    and (
+      auth.uid()::text = (storage.foldername(name))[1]
+      or is_superadmin()
+    )
+  );

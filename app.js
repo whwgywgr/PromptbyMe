@@ -445,9 +445,8 @@ function cardHTML(p, idx) {
         <div class="flex items-center gap-0.5 shrink-0">
           <button class="icon-btn !w-7 !h-7" data-action="share" title="Share">${icon('share', 'w-3.5 h-3.5')}</button>
           <button class="icon-btn !w-7 !h-7" data-action="copy" title="Copy prompt">${icon('copy', 'w-3.5 h-3.5')}</button>
-          ${canWrite() && isMine(p) ? `
-          <button class="icon-btn !w-7 !h-7" data-action="edit" title="Edit">${icon('edit', 'w-3.5 h-3.5')}</button>
-          <button class="icon-btn !w-7 !h-7 hover:!text-red-400" data-action="del" title="Delete">${icon('trash', 'w-3.5 h-3.5')}</button>` : ''}
+          ${canWrite() && isMine(p) ? `<button class="icon-btn !w-7 !h-7" data-action="edit" title="Edit">${icon('edit', 'w-3.5 h-3.5')}</button>` : ''}
+          ${canDeletePrompt(p) ? `<button class="icon-btn !w-7 !h-7 hover:!text-red-400" data-action="del" title="Delete">${icon('trash', 'w-3.5 h-3.5')}</button>` : ''}
         </div>
       </div>
     </div>
@@ -571,7 +570,7 @@ function resultCardHTML(r, editable = true) {
       <div class="flex items-center gap-0.5 shrink-0">
         ${r.source === 'url' ? `<a class="icon-btn" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer" title="Open in new tab">${icon('external')}</a>` : ''}
         ${r.source === 'upload' ? `<button class="icon-btn" data-action="dl-result" data-rid="${r.id}" title="Download">${icon('download')}</button>` : ''}
-        ${editable ? `<button class="icon-btn hover:!text-red-400" data-action="del-result" data-rid="${r.id}" title="Remove">${icon('trash')}</button>` : ''}
+        ${(editable || isSuperadmin()) ? `<button class="icon-btn hover:!text-red-400" data-action="del-result" data-rid="${r.id}" title="Remove">${icon('trash')}</button>` : ''}
       </div>
     </div>
   </div>`;
@@ -638,7 +637,7 @@ function renderDetail() {
         </div>
         ${p.results.length === 0
           ? `<div class="border border-dashed border-zinc-800 rounded-xl py-10 text-center text-sm text-zinc-500">No results yet — add an image, video or webview above.</div>`
-          : `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">${p.results.map(resultCardHTML).join('')}</div>`}
+          : `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">${p.results.map((r) => resultCardHTML(r, editable || isSuperadmin())).join('')}</div>`}
       </div>
     </div>`;
 
@@ -725,7 +724,7 @@ async function deletePromptFlow(id) {
   if (!canWrite()) { toast('Sign in to delete prompts', 'error'); return; }
   const p = state.prompts.find((x) => x.id === id);
   if (!p) return;
-  if (!isMine(p)) { toast('You can only delete your own prompts', 'error'); return; }
+  if (!canDeletePrompt(p)) { toast('You can only delete your own prompts', 'error'); return; }
   const ok = await confirmDialog('Delete prompt?', `"${p.title}" and its ${p.results.length} result${p.results.length === 1 ? '' : 's'} will be removed permanently.`, 'Delete');
   if (!ok) return;
   for (const r of p.results) {
@@ -1381,7 +1380,8 @@ function wireEvents() {
     const action = btn.dataset.action;
     if (action === 'share') { openShareModal(p); return; }
     if (['fav', 'edit', 'del'].includes(action) && !canWrite()) { toast('Sign in to make changes', 'error'); return; }
-    if (['fav', 'edit', 'del'].includes(action) && !isMine(p)) { toast('You can only manage your own prompts', 'error'); return; }
+    if (['fav', 'edit'].includes(action) && !isMine(p)) { toast('You can only manage your own prompts', 'error'); return; }
+    if (action === 'del' && !canDeletePrompt(p)) { toast('You can only delete your own prompts', 'error'); return; }
     if (action === 'open') {
       openDetail(p);
     } else if (action === 'fav') {
@@ -1529,6 +1529,15 @@ function isMine(p) {
 // read-only. Writes require being signed in (or local no-cloud mode).
 function isGuest() { return authConfigured() && !currentUser(); }
 function canWrite() { return !isGuest(); }
+function isSuperadmin() {
+  return authConfigured() && cloudMode()
+    && Array.isArray(window.PM_ADMIN_USERNAMES)
+    && window.PM_ADMIN_USERNAMES.map((a) => String(a).toLowerCase())
+      .includes(String(currentDisplayName()).toLowerCase());
+}
+
+// delete: pemilik ATAU superadmin; kawalan lain: pemilik sahaja
+function canDeletePrompt(p) { return canWrite() && (isMine(p) || isSuperadmin()); }
 
 function applyPermissions() {
   const guest = isGuest();
@@ -1685,6 +1694,7 @@ async function onAuthSubmit() {
 }
 
 async function onUserChanged(user) {
+  if (user) await fetchMyUsername();
   updateAccountUI();
   if (user) {
     if (!$('#modal-auth').classList.contains('hidden')) closeModal($('#modal-auth'));
@@ -1772,6 +1782,7 @@ async function init() {
   applyTheme((() => { try { return localStorage.getItem(THEME_KEY); } catch { return null; } })() || 'theme3');
 
   const user = await authInit();
+  if (user) await fetchMyUsername();
   await loadPrompts(user);
   wireEvents();
   renderGrid();
@@ -1779,6 +1790,7 @@ async function init() {
   authOnChange(onUserChanged);
   updateAccountUI();
   if (user) {
+    renderGrid();
     maybeOfferMigration(user);
     regenerateOldThumbs(user).catch(console.warn);
   }

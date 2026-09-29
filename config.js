@@ -14,3 +14,6 @@ window.PM_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJz
 // Auto-derived from the project URL. Once the function is deployed,
 // shared links use it so social posts show the prompt image + title.
 window.PM_OG_SHARE_URL = window.PM_SUPABASE_URL.replace(/\/$/, '') + '/functions/v1/og';
+
+// Superadmin (boleh delete prompt semua user) — senarai username
+window.PM_ADMIN_USERNAMES = ['yusuf'];

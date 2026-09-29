@@ -34,10 +34,27 @@ function authInit() {
 
 function currentUser() { return pmUser; }
 function currentUserId() { return pmUser ? pmUser.id : null; }
+
+let pmMyUsername = null;
+async function fetchMyUsername() {
+  if (!pmSupabase || !pmUser) return null;
+  try {
+    const { data, error } = await pmSupabase
+      .from('profiles')
+      .select('username')
+      .eq('id', pmUser.id)
+      .single();
+    if (!error && data) pmMyUsername = data.username;
+  } catch { pmMyUsername = null; }
+  return pmMyUsername;
+}
+
 function currentDisplayName() {
   if (!pmUser) return 'Account';
-  const meta = pmUser.user_metadata || {};
-  return meta.username || meta.name || (pmUser.email ? pmUser.email.split('@')[0] : 'Account');
+  return pmMyUsername
+    || pmUser.user_metadata?.username
+    || pmUser.user_metadata?.name
+    || (pmUser.email ? pmUser.email.split('@')[0] : 'Account');
 }
 
 // Google OAuth — redirects to Google, returns to emailRedirectTo with a session
@@ -48,11 +65,6 @@ async function signInWithGoogle() {
     options: { redirectTo: window.location.origin + window.location.pathname },
   });
   if (error) throw error;
-}
-function currentDisplayName() {
-  return (pmUser && pmUser.user_metadata && pmUser.user_metadata.username)
-    || (pmUser && pmUser.email && pmUser.email.split('@')[0])
-    || 'Account';
 }
 
 // username rules shared by sign-up and availability check
