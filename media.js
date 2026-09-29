@@ -1,13 +1,12 @@
 /* =====================================================================
    Client-side media processing (no build step, no libraries)
-   - compressImageUpload(file): resize full image to <=1920px and
-     re-encode (WebP for transparency, JPEG otherwise), plus a 400px
-     grid thumbnail. GIFs are skipped (animation is kept).
-   - makeVideoPoster(file): capture a frame (~0.5s) as a JPEG thumbnail.
+   - Full images/videos are uploaded ORIGINAL — zero quality loss.
+   - makeImageThumb / makeVideoPoster generate a 1200px grid thumbnail
+     (sharp on mobile retina) used for cards only.
    ===================================================================== */
 
-const PM_MAX_FULL = 1920;  // max dimension of the stored full image
-const PM_MAX_THUMB = 400;  // max dimension of the grid thumbnail
+const PM_THUMB_MAX = 1200;    // max long side of the grid thumbnail
+const PM_THUMB_QUALITY = 0.85;
 
 function pmDrawScaled(source, sourceW, sourceH, maxDim, mime, quality) {
   const scale = Math.min(1, maxDim / Math.max(sourceW, sourceH));
@@ -22,15 +21,13 @@ function pmDrawScaled(source, sourceW, sourceH, maxDim, mime, quality) {
   return new Promise((resolve) => c.toBlob((b) => resolve(b), mime, quality));
 }
 
-function pmExtForMime(mime) {
-  if (mime === 'image/webp') return '.webp';
-  if (mime === 'image/jpeg') return '.jpg';
-  return '';
+function pmThumbMime(sourceType) {
+  // WebP keeps transparency for PNG/WebP sources; JPEG elsewhere
+  return (sourceType === 'image/png' || sourceType === 'image/webp') ? 'image/webp' : 'image/jpeg';
 }
 
-// returns { full: Blob, thumb: Blob|null, wasReencoded: boolean }
-async function compressImageUpload(file) {
-  const isGif = file.type === 'image/gif';
+// grid thumbnail from an image File/Blob — null if it fails
+async function makeImageThumb(file) {
   try {
     let bitmap;
     try {
@@ -38,24 +35,17 @@ async function compressImageUpload(file) {
     } catch {
       bitmap = await createImageBitmap(file); // older browsers: no EXIF option
     }
-    if (isGif) {
-      const thumb = await pmDrawScaled(bitmap, bitmap.width, bitmap.height, PM_MAX_THUMB, 'image/jpeg', 0.72);
-      bitmap.close && bitmap.close();
-      return { full: file, thumb, wasReencoded: false }; // keep GIF animation
-    }
-    const keepTransparency = file.type === 'image/png' || file.type === 'image/webp';
-    const fullMime = keepTransparency ? 'image/webp' : 'image/jpeg';
-    const full = await pmDrawScaled(bitmap, bitmap.width, bitmap.height, PM_MAX_FULL, fullMime, 0.82);
-    const thumb = await pmDrawScaled(bitmap, bitmap.width, bitmap.height, PM_MAX_THUMB, 'image/jpeg', 0.72);
+    const mime = pmThumbMime(file.type);
+    const thumb = await pmDrawScaled(bitmap, bitmap.width, bitmap.height, PM_THUMB_MAX, mime, PM_THUMB_QUALITY);
     bitmap.close && bitmap.close();
-    return { full: full || file, thumb, wasReencoded: !!full };
+    return thumb;
   } catch (err) {
-    console.warn('Image compress fallback — storing original:', err);
-    return { full: file, thumb: null, wasReencoded: false };
+    console.warn('thumbnail failed:', err);
+    return null;
   }
 }
 
-// returns Blob (image/jpeg) or null if the frame cannot be captured
+// capture a frame (~0.5s) from a video File/Blob as a poster thumbnail
 function makeVideoPoster(file) {
   return new Promise((resolve) => {
     let done = false;
@@ -79,7 +69,7 @@ function makeVideoPoster(file) {
       } catch (e) { finish(null); }
     };
     v.onseeked = () => {
-      pmDrawScaled(v, v.videoWidth || 640, v.videoHeight || 360, PM_MAX_THUMB, 'image/jpeg', 0.72)
+      pmDrawScaled(v, v.videoWidth || 640, v.videoHeight || 360, PM_THUMB_MAX, 'image/jpeg', PM_THUMB_QUALITY)
         .then((b) => finish(b));
     };
     v.onerror = () => finish(null);

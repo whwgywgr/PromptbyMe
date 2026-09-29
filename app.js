@@ -467,7 +467,7 @@ function renderTagBar() {
 
 function sectionHTML(title, prompts, startIndex, opts = {}) {
   const countBadge = `<span class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-yellow-400 text-black">${prompts.length}</span>`;
-  const emptyHint = opts.emptyHint
+  const emptyHint = opts.emptyHint && prompts.length === 0
     ? `<p class="text-sm text-zinc-500 -mt-1">${esc(opts.emptyHint)}</p>`
     : '';
   return `
@@ -833,32 +833,30 @@ async function addUploadResults(files) {
     const type = f.type.startsWith('image/') ? 'image' : f.type.startsWith('video/') ? 'video' : null;
     if (!type || type !== state.resultType) { skipped++; continue; }
     const rid = uid();
-    let storage_path = null, thumb_path = null, fullBlob = f, displayName = f.name;
+    let storage_path = null, thumb_path = null;
     try {
       if (type === 'image') {
-        const res = await compressImageUpload(f);
-        fullBlob = res.full;
-        if (res.wasReencoded) displayName = f.name.replace(/\.[^.]+$/, '') + pmExtForMime(fullBlob.type || f.type);
-        if (res.thumb) {
-          if (cloudMode()) thumb_path = await storeUploadMedia(res.thumb, rid + '_t');
-          else await putMedia(rid + '_t', res.thumb);
+        const thumb = await makeImageThumb(f);
+        if (thumb) {
+          if (cloudMode()) thumb_path = await storeUploadMedia(thumb, rid + '_t');
+          else await putMedia(rid + '_t', thumb);
         }
       } else {
-        fullBlob = f;
         const poster = await makeVideoPoster(f);
         if (poster) {
           if (cloudMode()) thumb_path = await storeUploadMedia(poster, rid + '_t');
           else await putMedia(rid + '_t', poster);
         }
       }
-      if (cloudMode()) storage_path = await storeUploadMedia(fullBlob, rid);
-      else await putMedia(rid, fullBlob);
+      // fail penuh dimuat naik TANPA re-encode — kualiti asal 100%
+      if (cloudMode()) storage_path = await storeUploadMedia(f, rid);
+      else await putMedia(rid, f);
     } catch (err) {
       console.error(err);
       toast(`Could not store "${f.name}": ${err.message}`, 'error');
       continue;
     }
-    const r = { id: rid, type, source: 'upload', name: displayName, size: fullBlob.size, mime: fullBlob.type || f.type, ...(storage_path ? { storage_path } : {}), ...(thumb_path ? { thumb_path } : {}) };
+    const r = { id: rid, type, source: 'upload', name: f.name, size: f.size, mime: f.type, ...(storage_path ? { storage_path } : {}), ...(thumb_path ? { thumb_path } : {}) };
     p.results.push(r);
     if (cloudMode()) {
       try { await storeInsertResult(p.id, r, p.results.length - 1); }
@@ -1081,9 +1079,9 @@ async function doImport() {
           try {
             const blob = await (await fetch(r.dataUrl)).blob();
             if (r.type === 'image') {
-              const res = await compressImageUpload(blob);
-              await putMedia(r.id, res.full);
-              if (res.thumb) await putMedia(r.id + '_t', res.thumb);
+              const thumb = await makeImageThumb(blob);
+              await putMedia(r.id, blob);   // original
+              if (thumb) await putMedia(r.id + '_t', thumb);
             } else {
               await putMedia(r.id, blob);
               if (r.type === 'video') {
@@ -1241,6 +1239,39 @@ async function doShareAction(kind) {
     return;
   }
   doSocialShare(kind);
+}
+
+/* ---------- One-time: regenerate old 400px thumbs at 1200px -------- */
+
+async function regenerateOldThumbs(user) {
+  const key = 'pm:thumbs-regen:' + user.id;
+  if (localStorage.getItem(key)) return;
+  const targets = [];
+  for (const p of state.prompts) {
+    if (!isMine(p)) continue;
+    for (const r of p.results) {
+      if (r.type === 'image' && r.storage_path) targets.push(r);
+    }
+  }
+  localStorage.setItem(key, '1');
+  if (!targets.length) return;
+  toast('Updating image thumbnails…', 'info');
+  let fixed = 0;
+  for (const r of targets) {
+    try {
+      const resp = await fetch(storePublicUrl(r.storage_path));
+      if (!resp.ok) continue;
+      const thumb = await makeImageThumb(await resp.blob());
+      if (thumb) {
+        await storeUploadMedia(thumb, r.id + '_t'); // upsert over the old 400px
+        const cached = mediaUrlCache.get(r.id + '_t');
+        if (cached) { URL.revokeObjectURL(cached); mediaUrlCache.delete(r.id + '_t'); }
+        fixed++;
+      }
+    } catch (e) { console.warn(e); }
+  }
+  renderGrid();
+  if (fixed) toast(`Thumbnails updated (${fixed})`, 'success');
 }
 
 /* ============================ Lightbox ============================= */
@@ -1660,6 +1691,7 @@ async function onUserChanged(user) {
     await loadPrompts(user);
     renderGrid();
     maybeOfferMigration(user);
+    regenerateOldThumbs(user).catch(console.warn);
     toast('Signed in — your library is in sync', 'success');
   } else {
     await loadPrompts(null);
@@ -1703,9 +1735,9 @@ async function importIntoCloud(list) {
       if (nr.source === 'upload' && nr.dataUrl) {
         const blob = await (await fetch(nr.dataUrl)).blob();
         if (nr.type === 'image') {
-          const res = await compressImageUpload(blob);
-          nr.storage_path = await storeUploadMedia(res.full, nr.id);
-          if (res.thumb) nr.thumb_path = await storeUploadMedia(res.thumb, nr.id + '_t');
+          const thumb = await makeImageThumb(blob);
+          nr.storage_path = await storeUploadMedia(blob, nr.id);   // original
+          if (thumb) nr.thumb_path = await storeUploadMedia(thumb, nr.id + '_t');
         } else {
           nr.storage_path = await storeUploadMedia(blob, nr.id);
           if (nr.type === 'video') {
@@ -1746,7 +1778,10 @@ async function init() {
   openFromHash();
   authOnChange(onUserChanged);
   updateAccountUI();
-  if (user) maybeOfferMigration(user);
+  if (user) {
+    maybeOfferMigration(user);
+    regenerateOldThumbs(user).catch(console.warn);
+  }
 }
 
 init();
