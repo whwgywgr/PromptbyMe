@@ -1,0 +1,41 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create config.js from secrets
+        run: |
+          cat > config.js <<EOF
+          window.PM_SUPABASE_URL = '${{ secrets.SUPABASE_URL }}';
+          window.PM_SUPABASE_ANON_KEY = '${{ secrets.SUPABASE_ANON_KEY }}';
+          window.PM_OG_SHARE_URL = window.PM_SUPABASE_URL.replace(/\/$/, '') + '/functions/v1/og';
+          window.PM_ADMIN_USERNAMES = ['yusuf'];
+          EOF
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
