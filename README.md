@@ -27,7 +27,7 @@ The app runs fully offline by default. To enable cloud sync (username/password a
 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. Run [`supabase-setup.sql`](supabase-setup.sql) in Dashboard → SQL Editor (tables + RLS + storage bucket + profiles/username login).
-3. Dashboard → Settings → API: copy the **Project URL** and **anon public key** into [`config.js`](config.js).
+3. Dashboard → Settings → API: copy the **Project URL** and **anon public key** into `config.js` — copy [`config.example.js`](config.example.js) first and rename it (`config.js` is gitignored and never pushed).
 4. Dashboard → **Authentication → Providers → Email**: turn **OFF** "Confirm email" (signups use a synthetic address).
 5. Dashboard → Authentication → URL Configuration: add your site URL (e.g. `https://whwgywgr.github.io/prompt-manager/`) and `http://localhost:8931/` to the redirect allowlist.
 
