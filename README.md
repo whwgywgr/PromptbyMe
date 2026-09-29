@@ -54,6 +54,19 @@ python -m http.server 8931
 # then open http://localhost:8931
 ```
 
+## Deploy (GitHub Pages — recommended)
+
+The app can live online without any local server:
+
+1. Repo → **Settings → Secrets and variables → Actions** → add two secrets:
+   - `SUPABASE_URL` — your Supabase Project URL
+   - `SUPABASE_ANON_KEY` — your anon public key
+2. Repo → **Settings → Pages** → Build and deployment → Source: **GitHub Actions**
+3. Push to `main` (or re-run the failed "Deploy to GitHub Pages" workflow) — the site goes live at `https://whwgywgr.github.io/PromptbyMe/`
+4. Supabase → Authentication → URL Configuration → add `https://whwgywgr.github.io/PromptbyMe/` to Redirect URLs
+
+The workflow injects `config.js` from the secrets at deploy time — the anon key is public-safe by design (RLS protects the data); never put the service_role key in secrets or code.
+
 ## Tech
 
 Plain HTML + CSS (Tailwind CDN) + vanilla JavaScript. No build step, no dependencies, no framework. Theme system is pure CSS (`theme2.css` … `theme7.css` override a base theme via `body.themeN`).
