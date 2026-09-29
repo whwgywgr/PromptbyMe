@@ -9,3 +9,8 @@
 
 window.PM_SUPABASE_URL = 'https://jfqffxtziqvcxuejgfrt.supabase.co';       // e.g. 'https://abcd1234.supabase.co'
 window.PM_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmcWZmeHR6aXF2Y3h1ZWpnZnJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NjQ1NTcsImV4cCI6MjEwNjE0MDU1N30.rF8-RfFiOCoT2_zT8W70IgNMUGGAgaEYr6b_DgPpVlQ';      // e.g. 'eyJhbGciOi...'
+
+// Share-preview Edge Function (supabase/functions/og/index.ts).
+// Auto-derived from the project URL. Once the function is deployed,
+// shared links use it so social posts show the prompt image + title.
+window.PM_OG_SHARE_URL = window.PM_SUPABASE_URL.replace(/\/$/, '') + '/functions/v1/og';

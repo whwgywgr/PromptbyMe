@@ -33,6 +33,15 @@ The app runs fully offline by default. To enable cloud sync (username/password a
 
 A **Sign in** button appears in the header → **Sign up** tab creates an account with a username + password (no email needed from users). Each username gets its own private library (row-level security). First sign-in offers to migrate the prompts stored on that device.
 
+### Social share previews (optional)
+
+The Share button links to a small Edge Function that renders Open Graph tags (prompt image + title + excerpt) so shared posts on X/WhatsApp/Telegram show a rich card:
+
+1. Dashboard → Edge Functions → Create a function → name it `og` → paste [`supabase/functions/og/index.ts`](supabase/functions/og/index.ts) → Deploy
+2. Optional: Edge Functions → Secrets → add `APP_URL` = your app URL (default: `https://whwgywgr.github.io/PromptbyMe/`)
+
+The app probes the function automatically — once deployed, share links switch to the OG URL; before that they use the in-app hash link.
+
 ## Run
 
 **Option 1** — double-click `index.html` (works in Chrome/Edge).

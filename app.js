@@ -1112,9 +1112,9 @@ async function doImport() {
 
 /* ============================ Sharing ============================== */
 
-function shareText(p) {
+function shareText(p, link) {
   const body = p.prompt.length > 280 ? p.prompt.slice(0, 277) + '…' : p.prompt;
-  return `${p.title}\n\n${body}${p.model ? '\n\nModel: ' + p.model : ''}\n\n${promptUrl(p.id)}\n\n— PromptbyMe`;
+  return `${p.title}\n\n${body}${p.model ? '\n\nModel: ' + p.model : ''}\n\n${link}\n\n— PromptbyMe`;
 }
 
 // gambar untuk share: thumb (ringan) -> full -> url; null jika tiada
@@ -1144,7 +1144,8 @@ async function getShareImageBlob(p) {
 }
 
 async function nativeShare(p) {
-  const text = shareText(p);
+  const link = await shareLinkFor(p);
+  const text = shareText(p, link);
   const result = { status: 'copied' };
   if (navigator.share) {
     try {
@@ -1156,12 +1157,11 @@ async function nativeShare(p) {
           if (navigator.canShare && navigator.canShare({ files: [file] })) files = [file];
         }
       } catch {}
-      const url = promptUrl(p.id);
       if (files) {
         await navigator.share({ files, title: p.title, text });
         result.status = 'shared-image';
       } else {
-        await navigator.share({ title: p.title, text, url });
+        await navigator.share({ title: p.title, text, url: link });
         result.status = 'shared';
       }
       return result;
@@ -1178,7 +1178,8 @@ function openShareModal(p) {
   state.shareId = p.id;
   $('#share-title').textContent = p.title;
   const linkInput = $('#share-link');
-  linkInput.value = promptUrl(p.id);
+  linkInput.value = '…';
+  shareLinkFor(p).then((link) => { linkInput.value = link; });
   const native = $('#share-native');
   native.classList.toggle('hidden', !navigator.share);
   openModal($('#modal-share'));
@@ -1193,10 +1194,11 @@ function socialShareUrl(kind, text, url) {
   return null;
 }
 
-function doSocialShare(kind) {
+async function doSocialShare(kind) {
   const p = state.prompts.find((x) => x.id === state.shareId);
   if (!p) return;
-  const url = socialShareUrl(kind, shareText(p), promptUrl(p.id));
+  const link = await shareLinkFor(p);
+  const url = socialShareUrl(kind, shareText(p, link), link);
   if (url) window.open(url, '_blank', 'noopener,noreferrer');
 }
 
@@ -1215,12 +1217,14 @@ async function doShareAction(kind) {
     return;
   }
   if (kind === 'copy') {
-    const ok = await copyText(shareText(p));
+    const link = await shareLinkFor(p);
+    const ok = await copyText(shareText(p, link));
     toast(ok ? 'Prompt text copied' : 'Copy failed', ok ? 'success' : 'error');
     return;
   }
   if (kind === 'copylink') {
-    const ok = await copyText(promptUrl(p.id));
+    const link = await shareLinkFor(p);
+    const ok = await copyText(link);
     toast(ok ? 'Link copied' : 'Copy failed', ok ? 'success' : 'error');
     return;
   }
@@ -1527,6 +1531,25 @@ function findResultById(id) {
 
 function promptUrl(id) {
   return location.href.split('#')[0] + '#/p/' + id;
+}
+
+// Prefer the OG share-preview Edge Function link (rich social card with
+// image + title). Falls back to the in-app hash link when the function
+// is not deployed. The availability probe runs once per page load.
+let ogShareChecked = null;
+async function shareLinkFor(p) {
+  if (!authConfigured() || !window.PM_OG_SHARE_URL) return promptUrl(p.id);
+  if (ogShareChecked === null) {
+    try {
+      const resp = await fetch(window.PM_OG_SHARE_URL + '?id=probe');
+      ogShareChecked = resp.ok;
+    } catch {
+      ogShareChecked = false;
+    }
+  }
+  return ogShareChecked
+    ? window.PM_OG_SHARE_URL + '?id=' + encodeURIComponent(p.id)
+    : promptUrl(p.id);
 }
 
 function openDetail(p, push = true) {
